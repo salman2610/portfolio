@@ -8,10 +8,90 @@
         /* Basic styling to make the canvas fill the screen */
         body { margin: 0; overflow: hidden; background-color: #000; }
         canvas { display: block; }
+
+        /* Terminal Styling */
+        #terminal-container {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 500px; /* Adjust width as needed */
+            max-width: 90vw; /* Responsive width */
+            height: 300px; /* Adjust height as needed */
+            max-height: 50vh; /* Responsive height */
+            background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black */
+            border: 1px solid #00ffff; /* Neon cyan border */
+            box-shadow: 0 0 15px #00ffff; /* Neon glow */
+            font-family: 'Share Tech Mono', monospace; /* Classic terminal font */
+            color: #00ff00; /* Green text */
+            padding: 10px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Hide scrollbar for terminal output */
+            opacity: 0; /* Start hidden, will fade in with GSAP */
+            pointer-events: none; /* Initially non-interactive */
+            z-index: 100; /* Ensure it's on top of 3D scene */
+        }
+
+        #terminal-output {
+            flex-grow: 1;
+            overflow-y: auto; /* Scrollable output */
+            white-space: pre-wrap; /* Preserve whitespace and wrap text */
+            margin-bottom: 5px;
+            scrollbar-width: thin; /* Firefox */
+            scrollbar-color: #00ffff transparent; /* Firefox */
+        }
+
+        /* Webkit scrollbar (Chrome, Safari) */
+        #terminal-output::-webkit-scrollbar {
+            width: 8px;
+        }
+        #terminal-output::-webkit-scrollbar-thumb {
+            background-color: #00ffff;
+            border-radius: 4px;
+        }
+        #terminal-output::-webkit-scrollbar-track {
+            background-color: transparent;
+        }
+
+
+        #terminal-input-line {
+            display: flex;
+            align-items: center;
+        }
+
+        #terminal-prompt {
+            color: #00ffff; /* Cyan prompt */
+            margin-right: 5px;
+        }
+
+        #terminal-input {
+            flex-grow: 1;
+            background-color: transparent;
+            border: none;
+            outline: none;
+            color: #00ff00; /* Green input text */
+            caret-color: #00ff00; /* Green blinking cursor */
+            font-family: 'Share Tech Mono', monospace;
+            font-size: inherit; /* Inherit font size from container */
+            padding: 0;
+        }
+
+        /* Optional: Import a web font for the terminal */
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 </head>
 <body>
     <script type="module" src="./main.js"></script>
+
+    <div id="terminal-container">
+        <div id="terminal-output"></div>
+        <div id="terminal-input-line">
+            <span id="terminal-prompt">user@portfolio:~ $</span>
+            <input type="text" id="terminal-input" autofocus>
+        </div>
+    </div>
 </body>
 </html>
