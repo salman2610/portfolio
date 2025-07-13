@@ -107,6 +107,59 @@
             box-shadow: 0 0 20px #00ffff;
             color: #00ffff;
         }
+
+        /* Digital Clock Styling */
+        #digital-clock {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 2em; /* Large font size */
+            color: #00ffff; /* Neon cyan */
+            text-shadow: 0 0 10px #00ffff; /* Subtle glow */
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: 1px solid #00ffff;
+            box-shadow: 0 0 15px #00ffff;
+            opacity: 0; /* Start hidden */
+            transition: opacity 0.5s ease-in-out;
+            z-index: 101; /* Above 3D scene */
+            /* Glitch effect properties (will be toggled by JS) */
+            filter: brightness(1); /* Default no glitch */
+        }
+
+        /* CSS for the glitch effect */
+        .glitch-active {
+            animation: glitch-anim 0.8s infinite alternate; /* Adjust speed as needed */
+        }
+
+        @keyframes glitch-anim {
+            0% {
+                transform: translate(0);
+                filter: brightness(1);
+            }
+            20% {
+                transform: translate(-2px, 2px);
+                filter: brightness(1.2);
+            }
+            40% {
+                transform: translate(-1px, -1px);
+                filter: brightness(0.8);
+            }
+            60% {
+                transform: translate(2px, 1px);
+                filter: brightness(1.1);
+            }
+            80% {
+                transform: translate(1px, -2px);
+                filter: brightness(0.9);
+            }
+            100% {
+                transform: translate(0);
+                filter: brightness(1);
+            }
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 </head>
@@ -128,5 +181,7 @@
         </audio>
         <button id="audio-toggle-btn">Mute Audio</button>
     </div>
+
+    <div id="digital-clock"></div>
 </body>
 </html>
