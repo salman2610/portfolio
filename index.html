@@ -54,7 +54,6 @@
             background-color: transparent;
         }
 
-
         #terminal-input-line {
             display: flex;
             align-items: center;
@@ -80,6 +79,34 @@
         /* Optional: Import a web font for the terminal */
         @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
+        /* Audio Controls Styling */
+        #audio-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 101; /* Above terminal and 3D scene */
+            opacity: 0; /* Start hidden */
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        #audio-toggle-btn {
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px solid #00ffff;
+            color: #00ff00;
+            padding: 10px 15px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 0 10px #00ffff;
+            transition: all 0.2s ease-in-out;
+        }
+
+        #audio-toggle-btn:hover {
+            background-color: rgba(0, 0, 0, 0.9);
+            box-shadow: 0 0 20px #00ffff;
+            color: #00ffff;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 </head>
@@ -92,6 +119,14 @@
             <span id="terminal-prompt">user@portfolio:~ $</span>
             <input type="text" id="terminal-input" autofocus>
         </div>
+    </div>
+
+    <div id="audio-controls">
+        <audio id="background-audio" loop>
+            <source src="./assets/synthwave_bg.mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+        <button id="audio-toggle-btn">Mute Audio</button>
     </div>
 </body>
 </html>
