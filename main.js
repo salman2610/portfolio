@@ -5,17 +5,22 @@ import * as THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
 let scene, camera, renderer;
 let stars;
 let grid;
-let cube; // Keeping the cube for now as a placeholder object
+let cube;
 
-// --- New: Navigation Nodes Variables ---
-const navNodes = []; // Array to store your navigation spheres
+// Navigation Nodes Variables
+const navNodes = [];
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
-// --- Terminal Variables ---
+// Terminal Variables
 let terminalContainer;
 let terminalOutput;
 let terminalInput;
+
+// Audio Variables
+let backgroundAudio;
+let audioToggleButton;
+let isAudioMuted = false;
 
 function init() {
     // 1. Scene: The container for all your 3D objects, lights, and cameras
@@ -23,7 +28,11 @@ function init() {
     scene.background = new THREE.Color(0x000000); // Black background for space/cyberpunk
     
     // --- Add Fog for atmosphere ---
+    // Parameters: color, near (distance from camera where fog starts), far (distance where fog is densest)
+    // Try changing to a distinct color like 0x800080 (purple) to clearly see the fog effect
     scene.fog = new THREE.Fog(0x000000, 10, 200); // Black fog, subtle, blends into distance
+    // For a more distinct cyberpunk haze, uncomment the line below and comment the one above:
+    // scene.fog = new THREE.Fog(0x800080, 50, 300); // Purple fog for a more distinct haze
 
     // 2. Camera: Defines what is visible in your scene
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -119,13 +128,14 @@ function init() {
         },
         onComplete: () => {
             console.log("Cinematic fly-in animation complete!");
-            // Once camera fly-in is complete, fade in the terminal and nodes
+            // Once camera fly-in is complete, fade in the terminal, nodes, and audio controls
             setupTerminal();
-            setupNavNodes(); // Call this to create and display nodes
+            setupNavNodes();
+            setupAudio();
         }
     });
 
-    // --- New: Setup Navigation Nodes ---
+    // --- Setup Navigation Nodes ---
     function setupNavNodes() {
         const nodeData = [
             { name: "Projects", position: new THREE.Vector3(-15, 0, -10), color: 0xff00ff }, // Magenta
@@ -133,33 +143,33 @@ function init() {
             { name: "Contact", position: new THREE.Vector3(15, 0, -10), color: 0xffff00 }    // Yellow
         ];
 
-        const sphereGeometry = new THREE.SphereGeometry(2, 32, 32); // Radius 2, 32 segments
+        const sphereGeometry = new THREE.SphereGeometry(2, 32, 32);
         const baseMaterial = new THREE.MeshBasicMaterial({
             transparent: true,
             opacity: 0.8,
-            blending: THREE.AdditiveBlending, // For glowing effect
-            depthWrite: false // Avoid rendering issues with transparent objects
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
         });
 
         nodeData.forEach(data => {
-            const material = baseMaterial.clone(); // Clone material to give each node a unique color
+            const material = baseMaterial.clone();
             material.color.set(data.color);
             const node = new THREE.Mesh(sphereGeometry, material);
             node.position.copy(data.position);
-            node.userData = { name: data.name }; // Store data on the object for identification
+            node.userData = { name: data.name };
             scene.add(node);
             navNodes.push(node);
 
             // Animate node into view and make it float
-            node.scale.set(0.01, 0.01, 0.01); // Start small
+            node.scale.set(0.01, 0.01, 0.01);
             gsap.to(node.scale, { x: 1, y: 1, z: 1, duration: 1, ease: "back.out(1.7)", delay: 5 + Math.random() * 0.5 });
             gsap.to(node.position, {
-                y: node.position.y + 1, // Float up slightly
+                y: node.position.y + 1,
                 duration: 2,
                 yoyo: true,
                 repeat: -1,
                 ease: "sine.inOut",
-                delay: 5 + Math.random() // Stagger animation start
+                delay: 5 + Math.random()
             });
         });
 
@@ -168,21 +178,16 @@ function init() {
         window.addEventListener('click', onClick, false);
     }
 
-    // --- New: Raycasting for Interaction ---
+    // --- Raycasting for Interaction ---
     function onMouseMove(event) {
-        // Calculate mouse position in normalized device coordinates (-1 to +1)
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     }
 
     function onClick(event) {
-        // Only allow clicks after the terminal has appeared and scene is ready
-        if (terminalContainer.style.pointerEvents !== 'auto') return;
+        if (terminalContainer.style.pointerEvents !== 'auto') return; // Only allow clicks after scene is ready
 
-        // Update the picking ray with the camera and mouse position
         raycaster.setFromCamera(mouse, camera);
-
-        // Calculate objects intersecting the picking ray
         const intersects = raycaster.intersectObjects(navNodes);
 
         if (intersects.length > 0) {
@@ -190,38 +195,31 @@ function init() {
             const nodeName = clickedNode.userData.name;
             appendToTerminal(`Clicked on: ${nodeName}`, 'info');
             handleNodeClick(nodeName);
-
-            // Optional: visual feedback on click (e.g., scale up briefly)
             gsap.to(clickedNode.scale, { x: 1.2, y: 1.2, z: 1.2, duration: 0.1, yoyo: true, repeat: 1 });
         }
     }
 
     function handleNodeClick(nodeName) {
-        // This is where you'll define what happens when a node is clicked.
-        // For now, it just prints to the terminal.
-        // Later, this will trigger camera animations to specific views,
-        // load content, or activate specific UI elements.
         switch (nodeName) {
             case "Projects":
                 appendToTerminal("Navigating to Projects section...", 'info');
-                // Implement camera animation to Projects view
-                // Implement displaying project details
+                // Future: Implement camera animation to Projects view
+                // Future: Implement displaying project details
                 break;
             case "Experience":
                 appendToTerminal("Navigating to Experience section...", 'info');
-                // Implement camera animation to Experience view
-                // Implement displaying experience details
+                // Future: Implement camera animation to Experience view
+                // Future: Implement displaying experience details
                 break;
             case "Contact":
                 appendToTerminal("Navigating to Contact section...", 'info');
-                // Implement camera animation to Contact view
-                // Implement displaying contact form/info
+                // Future: Implement camera animation to Contact view
+                // Future: Implement displaying contact form/info
                 break;
         }
     }
 
-
-    // --- Terminal Functions (copied from previous full code) ---
+    // --- Terminal Functions ---
     function setupTerminal() {
         terminalContainer = document.getElementById('terminal-container');
         terminalOutput = document.getElementById('terminal-output');
@@ -231,25 +229,23 @@ function init() {
         appendToTerminal("Type 'help' for a list of commands.", 'info');
         appendToTerminal("You can also click on the floating nodes.", 'info');
 
-
         terminalInput.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
                 const command = terminalInput.value.trim();
-                appendToTerminal(`user@portfolio:~ $ ${command}`, 'command'); // Echo command
+                appendToTerminal(`user@portfolio:~ $ ${command}`, 'command');
                 handleCommand(command);
-                terminalInput.value = ''; // Clear input
-                terminalOutput.scrollTop = terminalOutput.scrollHeight; // Scroll to bottom
+                terminalInput.value = '';
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
             }
         });
 
-        // Make the terminal appear after the camera fly-in
         gsap.to(terminalContainer, {
             opacity: 1,
             duration: 1,
-            delay: 4.5, // Start slightly after camera animation (4s duration + 0.5s buffer)
+            delay: 4.5,
             onComplete: () => {
-                terminalContainer.style.pointerEvents = 'auto'; // Make interactive
-                terminalInput.focus(); // Focus on input
+                terminalContainer.style.pointerEvents = 'auto';
+                terminalInput.focus();
             }
         });
     }
@@ -258,14 +254,14 @@ function init() {
         const line = document.createElement('div');
         line.textContent = text;
         if (type === 'error') {
-            line.style.color = '#ff0000'; // Red for errors
+            line.style.color = '#ff0000';
         } else if (type === 'command') {
-            line.style.color = '#00ffff'; // Cyan for echoed commands
+            line.style.color = '#00ffff';
         } else if (type === 'info') {
-            line.style.color = '#ffff00'; // Yellow for info messages
+            line.style.color = '#ffff00';
         }
         terminalOutput.appendChild(line);
-        terminalOutput.scrollTop = terminalOutput.scrollHeight; // Auto-scroll
+        terminalOutput.scrollTop = terminalOutput.scrollHeight;
     }
 
     function handleCommand(command) {
@@ -276,24 +272,23 @@ function init() {
                 appendToTerminal("  - experience: See my work experience");
                 appendToTerminal("  - contact: Get my contact details");
                 appendToTerminal("  - clear: Clear the terminal output");
-                // Add more commands later
                 break;
             case 'projects':
                 appendToTerminal("Loading projects...", 'info');
-                handleNodeClick("Projects"); // Reuse node click handler
+                handleNodeClick("Projects");
                 break;
             case 'experience':
                 appendToTerminal("Loading experience...", 'info');
-                handleNodeClick("Experience"); // Reuse node click handler
+                handleNodeClick("Experience");
                 break;
             case 'contact':
                 appendToTerminal("Loading contact info...", 'info');
-                handleNodeClick("Contact"); // Reuse node click handler
+                handleNodeClick("Contact");
                 break;
             case 'clear':
                 terminalOutput.innerHTML = '';
                 break;
-            case '': // Empty command
+            case '':
                 break;
             default:
                 appendToTerminal(`Error: Unknown command '${command}'. Type 'help' for options.`, 'error');
@@ -301,6 +296,40 @@ function init() {
         }
     }
 
+    // --- Audio Functions ---
+    function setupAudio() {
+        backgroundAudio = document.getElementById('background-audio');
+        audioToggleButton = document.getElementById('audio-toggle-btn');
+        const audioControls = document.getElementById('audio-controls');
+
+        backgroundAudio.volume = 0.5;
+        backgroundAudio.play().catch(error => {
+            console.warn("Autoplay prevented:", error);
+            appendToTerminal("Autoplay failed. Click 'Play Audio' to enable sound.", 'info');
+            audioToggleButton.textContent = "Play Audio";
+            isAudioMuted = true;
+        });
+
+        audioToggleButton.addEventListener('click', toggleAudio);
+
+        gsap.to(audioControls, {
+            opacity: 1,
+            duration: 1,
+            delay: 4.5
+        });
+    }
+
+    function toggleAudio() {
+        if (isAudioMuted) {
+            backgroundAudio.play();
+            audioToggleButton.textContent = "Mute Audio";
+            isAudioMuted = false;
+        } else {
+            backgroundAudio.pause();
+            audioToggleButton.textContent = "Play Audio";
+            isAudioMuted = true;
+        }
+    }
 
     // Handle window resizing to keep the scene responsive
     window.addEventListener('resize', onWindowResize, false);
@@ -315,21 +344,15 @@ function onWindowResize() {
 function animate() {
     requestAnimationFrame(animate);
 
-    // Optional: Make the cube rotate for a simple animation
     if (cube) {
         cube.rotation.x += 0.005;
         cube.rotation.y += 0.005;
     }
 
-    // Animate Starfield (Subtle rotation)
     if (stars) {
         stars.rotation.y += 0.00005;
         stars.rotation.x += 0.00002;
     }
-
-    // Animate Nav Nodes (Hover effect - not implemented yet, but for future use)
-    // Raycasting for hover effects would typically go here or in a separate function
-    // For now, their floating animation is handled by GSAP setupNavNodes
 
     renderer.render(scene, camera);
 }
