@@ -1,11 +1,11 @@
 // Import Three.js
-import * * THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
+import * as THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
 
 // Declare global variables for scene, camera, renderer, and objects
 let scene, camera, renderer;
 let stars;
 let grid;
-let cube; // Keeping the cube for now as a placeholder object
+let cube;
 
 // Navigation Nodes Variables
 const navNodes = [];
@@ -22,14 +22,18 @@ let backgroundAudio;
 let audioToggleButton;
 let isAudioMuted = false;
 
-// New: Camera Target Positions for Navigation
+// Camera Target Positions for Navigation
 const cameraViews = {
     home: { position: new THREE.Vector3(0, 0, 15), lookAt: new THREE.Vector3(0, 0, 0) },
-    projects: { position: new THREE.Vector3(-30, 10, 0), lookAt: new THREE.Vector3(-15, 0, -10) }, // Look at Projects node
-    experience: { position: new THREE.Vector3(0, 10, -30), lookAt: new THREE.Vector3(0, 0, -10) }, // Look at Experience node
-    contact: { position: new THREE.Vector3(30, 10, 0), lookAt: new THREE.Vector3(15, 0, -10) }     // Look at Contact node
+    projects: { position: new THREE.Vector3(-30, 10, 0), lookAt: new THREE.Vector3(-15, 0, -10) },
+    experience: { position: new THREE.Vector3(0, 10, -30), lookAt: new THREE.Vector3(0, 0, -10) },
+    contact: { position: new THREE.Vector3(30, 10, 0), lookAt: new THREE.Vector3(15, 0, -10) }
 };
-let isCameraAnimating = false; // Flag to prevent multiple animations
+let isCameraAnimating = false;
+
+// New: Clock Variables
+let digitalClockElement;
+let glitchInterval;
 
 function init() {
     // 1. Scene: The container for all your 3D objects, lights, and cameras
@@ -55,17 +59,14 @@ function init() {
     scene.add(directionalLight);
 
     // --- Add a simple 3D object (a cube) to the scene to test the setup ---
-    // Reposition the cube slightly if you want it distinct from the nav nodes
-    cube.position.set(0, 10, -50); // Move cube further back and up
+    cube = new THREE.Mesh(new THREE.BoxGeometry(5, 5, 5), new THREE.MeshBasicMaterial({ color: 0x00ff00 }));
+    cube.position.set(0, 10, -50);
     scene.add(cube);
 
     // --- Create Starfield (Particle System) ---
     const starGeometry = new THREE.BufferGeometry();
     const starMaterial = new THREE.PointsMaterial({
-        color: 0xffffff,
-        size: 0.1,
-        transparent: true,
-        blending: THREE.AdditiveBlending
+        color: 0xffffff, size: 0.1, transparent: true, blending: THREE.AdditiveBlending
     });
     const starVertices = [];
     const numStars = 10000;
@@ -86,11 +87,7 @@ function init() {
     const gridYPosition = -50;
     const gridColor = new THREE.Color(0x00ffff);
     const gridMaterial = new THREE.LineBasicMaterial({
-        color: gridColor,
-        linewidth: 1,
-        transparent: true,
-        opacity: 0.2,
-        blending: THREE.AdditiveBlending
+        color: gridColor, linewidth: 1, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending
     });
     const gridGeometry = new THREE.BufferGeometry();
     const gridVertices = [];
@@ -108,13 +105,8 @@ function init() {
     grid = new THREE.LineSegments(gridGeometry, gridMaterial);
     scene.add(grid);
 
-    // Animate the grid's opacity for a subtle pulsing neon effect using GSAP
     gsap.to(grid.material, {
-        opacity: 0.4,
-        duration: 2,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut"
+        opacity: 0.4, duration: 2, repeat: -1, yoyo: true, ease: "sine.inOut"
     });
 
     // --- Cinematic Camera Fly-in Animation with GSAP ---
@@ -125,33 +117,29 @@ function init() {
         duration: 4,
         ease: "power2.out",
         onUpdate: () => {
-            camera.lookAt(cameraViews.home.lookAt); // Ensure it looks at home target
+            camera.lookAt(cameraViews.home.lookAt);
         },
         onComplete: () => {
             console.log("Cinematic fly-in animation complete!");
             setupTerminal();
             setupNavNodes();
             setupAudio();
-            isCameraAnimating = false; // Reset flag after initial animation
+            setupDigitalClock(); // New: Setup the digital clock
+            isCameraAnimating = false;
         }
     });
 
     // --- Setup Navigation Nodes ---
     function setupNavNodes() {
         const nodeData = [
-            { name: "Projects", position: new THREE.Vector3(-15, 0, -10), color: 0xff00ff }, // Magenta
-            { name: "Experience", position: new THREE.Vector3(0, 0, -10), color: 0x00ffff }, // Cyan
-            { name: "Contact", position: new THREE.Vector3(15, 0, -10), color: 0xffff00 }    // Yellow
+            { name: "Projects", position: new THREE.Vector3(-15, 0, -10), color: 0xff00ff },
+            { name: "Experience", position: new THREE.Vector3(0, 0, -10), color: 0x00ffff },
+            { name: "Contact", position: new THREE.Vector3(15, 0, -10), color: 0xffff00 }
         ];
-
         const sphereGeometry = new THREE.SphereGeometry(2, 32, 32);
         const baseMaterial = new THREE.MeshBasicMaterial({
-            transparent: true,
-            opacity: 0.8,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false
+            transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false
         });
-
         nodeData.forEach(data => {
             const material = baseMaterial.clone();
             material.color.set(data.color);
@@ -160,19 +148,12 @@ function init() {
             node.userData = { name: data.name };
             scene.add(node);
             navNodes.push(node);
-
-            node.scale.set(0.01, 0.01, 0.01); // Start small
+            node.scale.set(0.01, 0.01, 0.01);
             gsap.to(node.scale, { x: 1, y: 1, z: 1, duration: 1, ease: "back.out(1.7)", delay: 5 + Math.random() * 0.5 });
             gsap.to(node.position, {
-                y: node.position.y + 1,
-                duration: 2,
-                yoyo: true,
-                repeat: -1,
-                ease: "sine.inOut",
-                delay: 5 + Math.random()
+                y: node.position.y + 1, duration: 2, yoyo: true, repeat: -1, ease: "sine.inOut", delay: 5 + Math.random()
             });
         });
-
         window.addEventListener('mousemove', onMouseMove, false);
         window.addEventListener('click', onClick, false);
     }
@@ -182,13 +163,10 @@ function init() {
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     }
-
     function onClick(event) {
-        if (terminalContainer.style.pointerEvents !== 'auto' || isCameraAnimating) return; // Prevent clicks during camera animation
-
+        if (terminalContainer.style.pointerEvents !== 'auto' || isCameraAnimating) return;
         raycaster.setFromCamera(mouse, camera);
         const intersects = raycaster.intersectObjects(navNodes);
-
         if (intersects.length > 0) {
             const clickedNode = intersects[0].object;
             const nodeName = clickedNode.userData.name;
@@ -197,62 +175,35 @@ function init() {
             gsap.to(clickedNode.scale, { x: 1.2, y: 1.2, z: 1.2, duration: 0.1, yoyo: true, repeat: 1 });
         }
     }
-
-    // --- New: handleNodeClick to Animate Camera ---
     function handleNodeClick(nodeName) {
-        if (isCameraAnimating) return; // Prevent new animation if one is already in progress
-        isCameraAnimating = true; // Set flag to true
-
-        let targetView = cameraViews.home; // Default to home
+        if (isCameraAnimating) return;
+        isCameraAnimating = true;
+        let targetView = cameraViews.home;
         switch (nodeName) {
-            case "Projects":
-                targetView = cameraViews.projects;
-                break;
-            case "Experience":
-                targetView = cameraViews.experience;
-                break;
-            case "Contact":
-                targetView = cameraViews.contact;
-                break;
+            case "Projects": targetView = cameraViews.projects; break;
+            case "Experience": targetView = cameraViews.experience; break;
+            case "Contact": targetView = cameraViews.contact; break;
+            case "home": targetView = cameraViews.home; break; // Added home case for direct call
         }
-
-        // Animate camera position
         gsap.to(camera.position, {
-            x: targetView.position.x,
-            y: targetView.position.y,
-            z: targetView.position.z,
-            duration: 1.5, // Animation duration
-            ease: "power3.inOut", // Smooth easing for navigation
-            onUpdate: () => {
-                // Animate camera lookAt simultaneously for smoother transition
-                // This is a bit more complex, involves tweening the target vector
-                // For simplicity now, we just ensure it always looks at its destination
-                camera.lookAt(targetView.lookAt);
-            },
+            x: targetView.position.x, y: targetView.position.y, z: targetView.position.z,
+            duration: 1.5, ease: "power3.inOut",
+            onUpdate: () => { camera.lookAt(targetView.lookAt); },
             onComplete: () => {
-                isCameraAnimating = false; // Reset flag
+                isCameraAnimating = false;
                 appendToTerminal(`Now viewing: ${nodeName}`, 'info');
-                // You could now make specific content appear for this section
             }
         });
-
-        // If you want to animate the camera's lookAt separately or for a more complex path
-        // you'd use a separate tween for a dummy object that the camera always looks at,
-        // or directly animate camera.rotation. For simple lookAt targets, the onUpdate
-        // in the position tween is often sufficient.
     }
-
 
     // --- Terminal Functions ---
     function setupTerminal() {
         terminalContainer = document.getElementById('terminal-container');
         terminalOutput = document.getElementById('terminal-output');
         terminalInput = document.getElementById('terminal-input');
-
         appendToTerminal("Welcome to P. Salmanul Faris's immersive portfolio.", 'info');
         appendToTerminal("Type 'help' for a list of commands.", 'info');
         appendToTerminal("You can also click on the floating nodes.", 'info');
-
         terminalInput.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
                 const command = terminalInput.value.trim();
@@ -262,32 +213,20 @@ function init() {
                 terminalOutput.scrollTop = terminalOutput.scrollHeight;
             }
         });
-
         gsap.to(terminalContainer, {
-            opacity: 1,
-            duration: 1,
-            delay: 4.5,
-            onComplete: () => {
-                terminalContainer.style.pointerEvents = 'auto';
-                terminalInput.focus();
-            }
+            opacity: 1, duration: 1, delay: 4.5,
+            onComplete: () => { terminalContainer.style.pointerEvents = 'auto'; terminalInput.focus(); }
         });
     }
-
     function appendToTerminal(text, type = 'normal') {
         const line = document.createElement('div');
         line.textContent = text;
-        if (type === 'error') {
-            line.style.color = '#ff0000';
-        } else if (type === 'command') {
-            line.style.color = '#00ffff';
-        } else if (type === 'info') {
-            line.style.color = '#ffff00';
-        }
+        if (type === 'error') { line.style.color = '#ff0000'; }
+        else if (type === 'command') { line.style.color = '#00ffff'; }
+        else if (type === 'info') { line.style.color = '#ffff00'; }
         terminalOutput.appendChild(line);
         terminalOutput.scrollTop = terminalOutput.scrollHeight;
     }
-
     function handleCommand(command) {
         switch (command.toLowerCase()) {
             case 'help':
@@ -296,37 +235,17 @@ function init() {
                 appendToTerminal("  - experience: See my work experience");
                 appendToTerminal("  - contact: Get my contact details");
                 appendToTerminal("  - resume: Download my resume (PDF)");
-                appendToTerminal("  - home: Go to the main view"); // New: Home command
+                appendToTerminal("  - home: Go to the main view");
                 appendToTerminal("  - clear: Clear the terminal output");
                 break;
-            case 'projects':
-                appendToTerminal("Loading projects...", 'info');
-                handleNodeClick("Projects");
-                break;
-            case 'experience':
-                appendToTerminal("Loading experience...", 'info');
-                handleNodeClick("Experience");
-                break;
-            case 'contact':
-                appendToTerminal("Loading contact info...", 'info');
-                handleNodeClick("Contact");
-                break;
-            case 'resume':
-                appendToTerminal("Initiating resume download...", 'info');
-                downloadResume('./P.SalmanulFaris (PT) Resume.pdf');
-                break;
-            case 'home': // New: Home command
-                appendToTerminal("Returning to home view...", 'info');
-                handleNodeClick("home"); // Use handleNodeClick for consistency
-                break;
-            case 'clear':
-                terminalOutput.innerHTML = '';
-                break;
-            case '':
-                break;
-            default:
-                appendToTerminal(`Error: Unknown command '${command}'. Type 'help' for options.`, 'error');
-                break;
+            case 'projects': appendToTerminal("Loading projects...", 'info'); handleNodeClick("Projects"); break;
+            case 'experience': appendToTerminal("Loading experience...", 'info'); handleNodeClick("Experience"); break;
+            case 'contact': appendToTerminal("Loading contact info...", 'info'); handleNodeClick("Contact"); break;
+            case 'resume': appendToTerminal("Initiating resume download...", 'info'); downloadResume('./P.SalmanulFaris (PT) Resume.pdf'); break;
+            case 'home': appendToTerminal("Returning to home view...", 'info'); handleNodeClick("home"); break;
+            case 'clear': terminalOutput.innerHTML = ''; break;
+            case '': break;
+            default: appendToTerminal(`Error: Unknown command '${command}'. Type 'help' for options.`, 'error'); break;
         }
     }
 
@@ -346,7 +265,6 @@ function init() {
         backgroundAudio = document.getElementById('background-audio');
         audioToggleButton = document.getElementById('audio-toggle-btn');
         const audioControls = document.getElementById('audio-controls');
-
         backgroundAudio.volume = 0.5;
         backgroundAudio.play().catch(error => {
             console.warn("Autoplay prevented:", error);
@@ -354,27 +272,76 @@ function init() {
             audioToggleButton.textContent = "Play Audio";
             isAudioMuted = true;
         });
-
         audioToggleButton.addEventListener('click', toggleAudio);
-
         gsap.to(audioControls, {
+            opacity: 1, duration: 1, delay: 4.5
+        });
+    }
+    function toggleAudio() {
+        if (isAudioMuted) { backgroundAudio.play(); audioToggleButton.textContent = "Mute Audio"; isAudioMuted = false; }
+        else { backgroundAudio.pause(); audioToggleButton.textContent = "Play Audio"; isAudioMuted = true; }
+    }
+
+    // --- New: Digital Clock Functions ---
+    function setupDigitalClock() {
+        digitalClockElement = document.getElementById('digital-clock');
+        updateClock(); // Initial update
+
+        // Update clock every second
+        setInterval(updateClock, 1000);
+
+        // Randomly apply/remove glitch effect
+        glitchInterval = setInterval(toggleGlitch, 2000 + Math.random() * 3000); // Every 2-5 seconds
+
+        // Fade in the clock
+        gsap.to(digitalClockElement, {
             opacity: 1,
             duration: 1,
-            delay: 4.5
+            delay: 4.5 // Appear at the same time as terminal/nodes/audio
         });
     }
 
-    function toggleAudio() {
-        if (isAudioMuted) {
-            backgroundAudio.play();
-            audioToggleButton.textContent = "Mute Audio";
-            isAudioMuted = false;
-        } else {
-            backgroundAudio.pause();
-            audioToggleButton.textContent = "Play Audio";
-            isAudioMuted = true;
+    function updateClock() {
+        const now = new Date();
+        // Get time for Chennai, India (IST)
+        const options = {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false, // 24-hour format
+            timeZone: 'Asia/Kolkata' // IST timezone
+        };
+        const formatter = new Intl.DateTimeFormat('en-US', options);
+        let timeString = formatter.format(now);
+
+        // Get date for Chennai, India (IST)
+        const dateOptions = {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            timeZone: 'Asia/Kolkata'
+        };
+        const dateFormatter = new Intl.DateTimeFormat('en-US', dateOptions);
+        const dateString = dateFormatter.format(now);
+
+        // Display as YYYY-MM-DD HH:MM:SS
+        const [month, day, year] = dateString.split('/'); // US format is MM/DD/YYYY
+        const formattedDate = `${year}-${month}-${day}`;
+
+        digitalClockElement.textContent = `${formattedDate} ${timeString} IST`;
+    }
+
+    function toggleGlitch() {
+        // Randomly decide whether to apply glitch or not
+        if (Math.random() < 0.3) { // 30% chance to glitch
+            digitalClockElement.classList.add('glitch-active');
+            // Remove glitch after a short random duration (e.g., 200-500ms)
+            setTimeout(() => {
+                digitalClockElement.classList.remove('glitch-active');
+            }, 200 + Math.random() * 300);
         }
     }
+
 
     // Handle window resizing to keep the scene responsive
     window.addEventListener('resize', onWindowResize, false);
