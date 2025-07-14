@@ -2,10 +2,10 @@
 import * as THREE from './three.module.js'; // Points to local three.module.js
 import { FontLoader } from './FontLoader.js'; // Points to local FontLoader.js
 import { TextGeometry } from './TextGeometry.js'; // Points to local TextGeometry.js
-// If you have local GLTFLoader.js and OrbitControls.js, change these paths too:
+// If you are using GLTFLoader and OrbitControls, and have them locally, change their paths as well:
 // import { GLTFLoader } from './GLTFLoader.js';
 // import { OrbitControls } from './OrbitControls.js';
-// Otherwise, keep them as CDN links or remove if not used:
+// Otherwise, keep them as CDN links if you don't have local copies:
 import { GLTFLoader } from 'https://unpkg.com/three@0.165.0/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'https://unpkg.com/three@0.165.0/examples/jsm/controls/OrbitControls.js';
 
@@ -64,7 +64,7 @@ let hasScrolled = false;
 const bootSequenceMessages = [
     "> INIT_CORE_SEQUENCE",
     "> SCANNING SYSTEM BIOS…",
-    "> IDENTITY: P. Salmanul Faris",
+    "> IDENTITY: P. SALMANUL FARIS",
     "> SYSTEM STATUS: FULL STACK OP • PEN TESTER • PHYSICIST",
     "> LOADING VISUAL CORE…",
     "", 
@@ -277,7 +277,7 @@ function startStargateEntry() {
 // Load Font and Create 3D Text (called in init)
 function loadFontAndCreateText() {
     const fontLoader = new FontLoader();
-    // IMPORTANT: Corrected path to your font file: it's now at the root.
+    // IMPORTANT: Path to your font file is now relative to main.js as uploaded to root.
     fontLoader.load('./helvetiker_regular.typeface.json', function (font) { // Corrected path to root
         loadedFont = font; 
 
