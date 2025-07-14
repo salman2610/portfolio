@@ -1,16 +1,13 @@
-// Ensure these imports use relative paths to the local files you uploaded:
-import * as THREE from './three.module.js'; // Changed from unpkg.com to local file
-import { FontLoader } from './FontLoader.js'; // Changed from unpkg.com to local file
-import { TextGeometry } from './TextGeometry.js'; // Changed from unpkg.com to local file
-// If you are using GLTFLoader and OrbitControls, they also need to be local if you have them,
-// or remain as unpkg.com links if you don't have local copies.
-// For now, let's assume they are either local or will be handled if errors arise for them.
-// If you have local GLTFLoader.js and OrbitControls.js, change these too:
+// Ensure these imports use RELATIVE PATHS to the local files you uploaded:
+import * as THREE from './three.module.js'; // Points to local three.module.js
+import { FontLoader } from './FontLoader.js'; // Points to local FontLoader.js
+import { TextGeometry } from './TextGeometry.js'; // Points to local TextGeometry.js
+// If you have local GLTFLoader.js and OrbitControls.js, change these paths too:
 // import { GLTFLoader } from './GLTFLoader.js';
 // import { OrbitControls } from './OrbitControls.js';
-// If you DON'T have local copies, remove these lines or keep them as unpkg.com
-import { GLTFLoader } from 'https://unpkg.com/three@0.165.0/examples/jsm/loaders/GLTFLoader.js'; // Kept CDN for now
-import { OrbitControls } from 'https://unpkg.com/three@0.165.0/examples/jsm/controls/OrbitControls.js'; // Kept CDN for now
+// Otherwise, keep them as CDN links or remove if not used:
+import { GLTFLoader } from 'https://unpkg.com/three@0.165.0/examples/jsm/loaders/GLTFLoader.js';
+import { OrbitControls } from 'https://unpkg.com/three@0.165.0/examples/jsm/controls/OrbitControls.js';
 
 
 console.log('THREE loaded:', THREE);
@@ -24,7 +21,7 @@ console.log('OrbitControls loaded:', OrbitControls);
 let scene, camera, renderer;
 let stars;
 let grid;
-let cube; // Keeping the cube for now as a placeholder object
+let cube; 
 
 // Stargate Rings Array
 const stargateRings = [];
@@ -62,7 +59,7 @@ let loadingScreen;
 let bootMessagesElement;
 let powerNodeContainer;
 let scrollPromptElement;
-let hasScrolled = false; // Flag to ensure scroll animation only plays once
+let hasScrolled = false; 
 
 const bootSequenceMessages = [
     "> INIT_CORE_SEQUENCE",
@@ -70,7 +67,7 @@ const bootSequenceMessages = [
     "> IDENTITY: P. Salmanul Faris",
     "> SYSTEM STATUS: FULL STACK OP • PEN TESTER • PHYSICIST",
     "> LOADING VISUAL CORE…",
-    "", // Small pause / spacing
+    "", 
     "Decrypting past... Compiling skills...",
     "Analyzing quantum signature... Physics meets code...",
     "Establishing neural handshake...",
@@ -84,7 +81,7 @@ let bootSequenceComplete = false;
 // New: 3D Text Variables
 let mainTitle3D;
 let subTitle3D;
-let loadedFont; // To store the loaded font
+let loadedFont; 
 
 function init() {
     // Get elements for the boot sequence
@@ -105,8 +102,8 @@ function init() {
 
 // Function to handle typing effect for boot messages
 function startBootSequence() {
-    bootMessagesElement.textContent = ''; // Clear existing text
-    bootMessagesElement.classList.add('typed-text'); // Add typing cursor
+    bootMessagesElement.textContent = ''; 
+    bootMessagesElement.classList.add('typed-text'); 
 
     typingInterval = setInterval(() => {
         if (messageIndex < bootSequenceMessages.length) {
@@ -115,46 +112,39 @@ function startBootSequence() {
                 bootMessagesElement.textContent += currentLine.charAt(charIndex);
                 charIndex++;
             } else {
-                // End of current line, move to next after a delay
                 clearInterval(typingInterval);
                 setTimeout(() => {
                     messageIndex++;
                     charIndex = 0;
                     if (messageIndex < bootSequenceMessages.length) {
-                        bootMessagesElement.textContent = ''; // Clear for next line
-                        startBootSequence(); // Start typing next line
+                        bootMessagesElement.textContent = ''; 
+                        startBootSequence(); 
                     } else {
-                        // All messages typed, boot sequence complete
                         bootMessagesElement.classList.remove('typed-text');
                         bootSequenceComplete = true;
-                        // New: Display scroll prompt instead of starting stargate directly
                         displayScrollPrompt();
                     }
-                }, 1000); // Pause before next line/transition
+                }, 1000); 
             }
         }
-    }, 50); // Typing speed (milliseconds per character)
+    }, 50); 
 }
 
 // Display Scroll Prompt and setup scroll listener
 function displayScrollPrompt() {
-    // Show the scroll prompt
     gsap.to(scrollPromptElement, { opacity: 1, duration: 1, delay: 0.5 });
 
-    // Add scroll event listener to trigger the main intro
-    window.addEventListener('wheel', handleScrollToEnter, { once: true }); // 'once: true' makes it fire only once
-    window.addEventListener('touchstart', handleScrollToEnter, { once: true }); // For mobile touch
+    window.addEventListener('wheel', handleScrollToEnter, { once: true }); 
+    window.addEventListener('touchstart', handleScrollToEnter, { once: true }); 
 }
 
 // Handler for scroll event
 function handleScrollToEnter() {
-    if (hasScrolled) return; // Prevent multiple triggers
+    if (hasScrolled) return; 
     hasScrolled = true;
 
-    // Fade out scroll prompt
     gsap.to(scrollPromptElement, { opacity: 0, duration: 0.5 });
 
-    // Initialize the Three.js scene and start the Stargate entry
     startStargateEntry();
 }
 
@@ -166,12 +156,12 @@ function startStargateEntry() {
     scene.fog = new THREE.Fog(0x000000, 50, 400);
 
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 0, 300); // Camera starts far back for wormhole journey
+    camera.position.set(0, 0, 300); 
     camera.lookAt(0, 0, 0);
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement); // Add canvas to body
+    document.body.appendChild(renderer.domElement); 
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
@@ -268,30 +258,28 @@ function startStargateEntry() {
         x: cameraViews.home.position.x,
         y: cameraViews.home.position.y,
         z: cameraViews.home.position.z,
-        duration: 8, // Longer duration for wormhole effect
+        duration: 8, 
         ease: "power3.inOut",
         onUpdate: () => {
-            camera.lookAt(0, 0, 0); // Keep looking at the center during wormhole
-            // Stargate rings and stars movement for wormhole effect are handled in animate()
+            camera.lookAt(0, 0, 0); 
         },
         onComplete: () => {
             console.log("Stargate / Wormhole Entry complete!");
-            // Now trigger the Logo/Naming Reveal (Scene 3)
             revealNameAndTitles();
         }
     });
 
     window.addEventListener('resize', onWindowResize, false);
 
-    animate();
+    animate(); 
 }
 
 // Load Font and Create 3D Text (called in init)
 function loadFontAndCreateText() {
     const fontLoader = new FontLoader();
-    // IMPORTANT: Path to your font file is now relative to main.js as uploaded to root.
-    fontLoader.load('./helvetiker_regular.typeface.json', function (font) { // Corrected path
-        loadedFont = font;
+    // IMPORTANT: Corrected path to your font file: it's now at the root.
+    fontLoader.load('./helvetiker_regular.typeface.json', function (font) { // Corrected path to root
+        loadedFont = font; 
 
         const mainTitleText = "P. SALMANUL FARIS";
         const subTitleText = "Certified Penetration Tester • Full Stack Developer • Physicist";
@@ -299,8 +287,8 @@ function loadFontAndCreateText() {
         // Main Title
         const mainTitleGeometry = new TextGeometry(mainTitleText, {
             font: font,
-            size: 8,
-            height: 1,
+            size: 8, 
+            height: 1, 
             curveSegments: 12,
             bevelEnabled: true,
             bevelThickness: 0.5,
@@ -308,18 +296,18 @@ function loadFontAndCreateText() {
             bevelOffset: 0,
             bevelSegments: 5
         });
-        mainTitleGeometry.computeBoundingBox();
+        mainTitleGeometry.computeBoundingBox(); 
         const mainTitleWidth = mainTitleGeometry.boundingBox.max.x - mainTitleGeometry.boundingBox.min.x;
-        mainTitleGeometry.translate(-mainTitleWidth / 2, 0, 0);
+        mainTitleGeometry.translate(-mainTitleWidth / 2, 0, 0); 
 
         const mainTitleMaterial = new THREE.MeshBasicMaterial({
-            color: 0x00ffff,
+            color: 0x00ffff, 
             transparent: true,
-            opacity: 0,
-            blending: THREE.AdditiveBlending
+            opacity: 0, 
+            blending: THREE.AdditiveBlending 
         });
         mainTitle3D = new THREE.Mesh(mainTitleGeometry, mainTitleMaterial);
-        mainTitle3D.position.set(0, 5, -20);
+        mainTitle3D.position.set(0, 5, -20); 
 
         // Subtitle
         const subTitleGeometry = new TextGeometry(subTitleText, {
@@ -338,13 +326,13 @@ function loadFontAndCreateText() {
         subTitleGeometry.translate(-subTitleWidth / 2, 0, 0);
 
         const subTitleMaterial = new THREE.MeshBasicMaterial({
-            color: 0x00ff00,
+            color: 0x00ff00, 
             transparent: true,
-            opacity: 0,
+            opacity: 0, 
             blending: THREE.AdditiveBlending
         });
         subTitle3D = new THREE.Mesh(subTitleGeometry, subTitleMaterial);
-        subTitle3D.position.set(0, 0, -20);
+        subTitle3D.position.set(0, 0, -20); 
 
         console.log("3D Text loaded and ready.");
 
@@ -391,11 +379,11 @@ function revealNameAndTitles() {
     gsap.to(camera.position, {
         x: 0,
         y: 0,
-        z: 30,
-        duration: 2,
+        z: 30, 
+        duration: 2, 
         ease: "power2.inOut",
         onUpdate: () => {
-            camera.lookAt(0, 0, -20);
+            camera.lookAt(0, 0, -20); 
         }
     });
 
@@ -403,19 +391,19 @@ function revealNameAndTitles() {
     gsap.to(subTitle3D.material, { opacity: 1, duration: 1.5, delay: 1.5, ease: "power2.out" });
 
     gsap.fromTo(mainTitle3D.position,
-        { y: mainTitle3D.position.y + 5, z: mainTitle3D.position.z - 10 },
+        { y: mainTitle3D.position.y + 5, z: mainTitle3D.position.z - 10 }, 
         { y: mainTitle3D.position.y, z: mainTitle3D.position.z, duration: 2, delay: 0.5, ease: "power3.out" }
     );
     gsap.fromTo(subTitle3D.position,
-        { y: subTitle3D.position.y - 5, z: subTitle3D.position.z - 10 },
+        { y: subTitle3D.position.y - 5, z: subTitle3D.position.z - 10 }, 
         { y: subTitle3D.position.y, z: subTitle3D.position.z, duration: 2, delay: 1, ease: "power3.out" }
     );
 
 
     gsap.to(scene.background, {
-        r: 0.1, g: 0.1, b: 0.2,
+        r: 0.1, g: 0.1, b: 0.2, 
         duration: 2,
-        delay: 2,
+        delay: 2, 
         onComplete: () => {
             gsap.to(loadingScreen, {
                 opacity: 0,
@@ -546,7 +534,7 @@ function handleCommand(command) {
         case 'projects': appendToTerminal("Loading projects...", 'info'); handleNodeClick("Projects"); break;
         case 'experience': appendToTerminal("Loading experience...", 'info'); handleNodeClick("Experience"); break;
         case 'contact': appendToTerminal("Loading contact info...", 'info'); handleNodeClick("Contact"); break;
-        case 'resume': appendToTerminal("Initiating resume download...", 'info'); downloadResume('./P.SalmanulFaris-Resume.pdf'); break;
+        case 'resume': appendToTerminal("Initiating resume download...", 'info'); downloadResume('./P.SalmanulFaris-Resume.pdf'); break; 
         case 'home': appendToTerminal("Returning to home view...", 'info'); handleNodeClick("home"); break;
         case 'clear': terminalOutput.innerHTML = ''; break;
         case '': break;
@@ -670,9 +658,6 @@ function animate() {
     }
 }
 
-// Call loadFontAndCreateText() BEFORE init() to preload the font.
-// This ensures the font is loaded before it's needed for TextGeometry in revealNameAndTitles().
 loadFontAndCreateText();
 
-// IMPORTANT: Call init() here to start the entire process.
 init();
