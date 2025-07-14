@@ -1,9 +1,9 @@
 // Ensure these imports use RELATIVE PATHS to the local files you uploaded,
 // AND THAT THE FILENAMES (INCLUDING CASE) MATCH EXACTLY IN YOUR GITHUB REPOSITORY:
 import * as THREE from './three.module.js'; // Points to local three.module.js
-import { FontLoader } } from './FontLoader.js'; // Points to local FontLoader.js
-import { TextGeometry } } from './TextGeometry.js'; // Points to local TextGeometry.js
-// If you have local GLTFLoader.js and OrbitControls.js, change these paths too:
+import { FontLoader } from './FontLoader.js'; // Points to local FontLoader.js
+import { TextGeometry } from './TextGeometry.js'; // CORRECTED LINE: Removed extra '}'
+// If you are using GLTFLoader and OrbitControls, change these paths too:
 // import { GLTFLoader } from './GLTFLoader.js';
 // import { OrbitControls } from './OrbitControls.js';
 // Otherwise, keep them as CDN links:
