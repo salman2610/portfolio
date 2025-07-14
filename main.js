@@ -1,6 +1,7 @@
+// Ensure these imports are from the CDN (unpkg.com) for maximum reliability:
 import * as THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
 import { FontLoader } from 'https://unpkg.com/three@0.165.0/examples/jsm/loaders/FontLoader.js';
-import { TextGeometry } from 'https://unpkg.com/three@0.165.0/examples/jsm/geometries/TextGeometry.js'; // THIS LINE IS CORRECTED
+import { TextGeometry } from 'https://unpkg.com/three@0.165.0/examples/jsm/geometries/TextGeometry.js'; // THIS LINE IS NOW CORRECTED - NO EXTRA '}'
 import { GLTFLoader } from 'https://unpkg.com/three@0.165.0/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'https://unpkg.com/three@0.165.0/examples/jsm/controls/OrbitControls.js';
 
@@ -529,7 +530,7 @@ function handleCommand(command) {
         case 'projects': appendToTerminal("Loading projects...", 'info'); handleNodeClick("Projects"); break;
         case 'experience': appendToTerminal("Loading experience...", 'info'); handleNodeClick("Experience"); break;
         case 'contact': appendToTerminal("Loading contact info...", 'info'); handleNodeClick("Contact"); break;
-        case 'resume': appendToTerminal("Initiating resume download...", 'info'); downloadResume('./P.SalmanulFaris_Resume.pdf'); break; 
+        case 'resume': appendToTerminal("Initiating resume download...", 'info'); downloadResume('./P.SalmanulFaris-Resume.pdf'); break; 
         case 'home': appendToTerminal("Returning to home view...", 'info'); handleNodeClick("home"); break;
         case 'clear': terminalOutput.innerHTML = ''; break;
         case '': break;
