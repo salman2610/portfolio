@@ -1,6 +1,6 @@
-import * as THREE from './assets/lib/three/three.module.js';
-import { FontLoader } from './assets/lib/three/loaders/FontLoader.js';
-import { TextGeometry } from './assets/lib/three/geometries/TextGeometry.js';
+import * as THREE from './assets/three.module.js';
+import { FontLoader } from './assets/loaders/FontLoader.js';
+import { TextGeometry } from './assets/geometries/TextGeometry.js';
 
 // Declare global variables for scene, camera, renderer, and objects
 let scene, camera, renderer;
@@ -273,7 +273,7 @@ function startStargateEntry() {
 function loadFontAndCreateText() {
     const fontLoader = new FontLoader();
     // Ensure the font file path is correct
-    fontLoader.load('./assets/fonts/helvetiker_regular.typeface.json', function (font) {
+    fontLoader.load('./assets/helvetiker_regular.typeface.json', function (font) {
         loadedFont = font; // Store the font for later use if needed
 
         const mainTitleText = "P. SALMANUL FARIS";
@@ -541,7 +541,7 @@ function handleCommand(command) {
         case 'projects': appendToTerminal("Loading projects...", 'info'); handleNodeClick("Projects"); break;
         case 'experience': appendToTerminal("Loading experience...", 'info'); handleNodeClick("Experience"); break;
         case 'contact': appendToTerminal("Loading contact info...", 'info'); handleNodeClick("Contact"); break;
-        case 'resume': appendToTerminal("Initiating resume download...", 'info'); downloadResume('./P.SalmanulFaris (PT) Resume.pdf'); break;
+        case 'resume': appendToTerminal("Initiating resume download...", 'info'); downloadResume('./P.SalmanulFaris-Resume.pdf'); break;
         case 'home': appendToTerminal("Returning to home view...", 'info'); handleNodeClick("home"); break;
         case 'clear': terminalOutput.innerHTML = ''; break;
         case '': break;
@@ -594,6 +594,9 @@ function setupDigitalClock() {
 }
 function updateClock() {
     const now = new Date();
+    now.setHours(10); // Set to 10:53 AM IST
+    now.setMinutes(53);
+    now.setSeconds(0);
     const options = {
         hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Asia/Kolkata'
     };
