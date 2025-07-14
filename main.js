@@ -1,12 +1,7 @@
-// Ensure these imports use RELATIVE PATHS to the local files you uploaded,
-// AND THAT THE FILENAMES (INCLUDING CASE) MATCH EXACTLY IN YOUR GITHUB REPOSITORY:
-import * as THREE from './three.module.js'; // Points to local three.module.js
-import { FontLoader } from './FontLoader.js'; // Points to local FontLoader.js
-import { TextGeometry } from './TextGeometry.js'; // CORRECTED LINE: No extra '}'
-// If you are using GLTFLoader and OrbitControls, change these paths too:
-// import { GLTFLoader } from './GLTFLoader.js';
-// import { OrbitControls } from './OrbitControls.js';
-// Otherwise, keep them as CDN links:
+// Ensure these imports are from the CDN (unpkg.com) for maximum reliability:
+import * as THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
+import { FontLoader } from 'https://unpkg.com/three@0.165.0/examples/jsm/loaders/FontLoader.js';
+import { TextGeometry } from 'https://unpkg.com/three@0.165.0/examples/jsm/geometries/TextGeometry.js'; // THIS LINE IS CORRECTED
 import { GLTFLoader } from 'https://unpkg.com/three@0.165.0/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'https://unpkg.com/three@0.165.0/examples/jsm/controls/OrbitControls.js';
 
@@ -535,7 +530,7 @@ function handleCommand(command) {
         case 'projects': appendToTerminal("Loading projects...", 'info'); handleNodeClick("Projects"); break;
         case 'experience': appendToTerminal("Loading experience...", 'info'); handleNodeClick("Experience"); break;
         case 'contact': appendToTerminal("Loading contact info...", 'info'); handleNodeClick("Contact"); break;
-        case 'resume': appendToTerminal("Initiating resume download...", 'info'); downloadResume('./P.SalmanulFaris-Resume.pdf'); break; 
+        case 'resume': appendToTerminal("Initiating resume download...", 'info'); downloadResume('./P.SalmanulFaris_Resume.pdf'); break; 
         case 'home': appendToTerminal("Returning to home view...", 'info'); handleNodeClick("home"); break;
         case 'clear': terminalOutput.innerHTML = ''; break;
         case '': break;
