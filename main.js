@@ -1,5 +1,10 @@
 // Import Three.js
 import * as THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
+// New: Import FontLoader
+import { FontLoader } from 'https://unpkg.com/three@0.165.0/examples/jsm/loaders/FontLoader.js';
+// New: Import TextGeometry
+import { TextGeometry } from 'https://unpkg.com/three@0.165.0/examples/jsm/geometries/TextGeometry.js';
+
 
 // Declare global variables for scene, camera, renderer, and objects
 let scene, camera, renderer;
@@ -7,7 +12,7 @@ let stars;
 let grid;
 let cube;
 
-// New: Stargate Rings Array
+// Stargate Rings Array
 const stargateRings = [];
 
 // Navigation Nodes Variables
@@ -42,9 +47,8 @@ let glitchInterval;
 let loadingScreen;
 let bootMessagesElement;
 let powerNodeContainer;
-// New: Scroll Prompt Element
 let scrollPromptElement;
-let hasScrolled = false; // Flag to ensure scroll animation only plays once
+let hasScrolled = false;
 
 const bootSequenceMessages = [
     "> INIT_CORE_SEQUENCE",
@@ -63,21 +67,24 @@ let charIndex = 0;
 let typingInterval;
 let bootSequenceComplete = false;
 
+// --- New: 3D Text Variables ---
+let mainTitle3D;
+let subTitle3D;
+let loadedFont; // To store the loaded font
 
 function init() {
     loadingScreen = document.getElementById('loading-screen');
     bootMessagesElement = document.getElementById('boot-messages');
     powerNodeContainer = document.getElementById('power-node-container');
-    scrollPromptElement = document.getElementById('scroll-prompt'); // Get scroll prompt element
+    scrollPromptElement = document.getElementById('scroll-prompt');
 
     gsap.to(powerNodeContainer, { opacity: 1, duration: 1, delay: 0.5 });
     startBootSequence();
 }
 
-// --- Function to handle typing effect for boot messages ---
 function startBootSequence() {
     bootMessagesElement.textContent = '';
-    bootMessagesElement.classList.add('typed-text'); // Add typing cursor
+    bootMessagesElement.classList.add('typed-text');
 
     typingInterval = setInterval(() => {
         if (messageIndex < bootSequenceMessages.length) {
@@ -94,42 +101,32 @@ function startBootSequence() {
                         bootMessagesElement.textContent = '';
                         startBootSequence();
                     } else {
-                        // All messages typed, boot sequence complete
                         bootMessagesElement.classList.remove('typed-text');
                         bootSequenceComplete = true;
-                        // New: Display scroll prompt instead of starting stargate directly
                         displayScrollPrompt();
                     }
-                }, 1000); // Pause before next line/transition
+                }, 1000);
             }
         }
-    }, 50); // Typing speed (milliseconds per character)
+    }, 50);
 }
 
-// --- New: Display Scroll Prompt and setup scroll listener ---
 function displayScrollPrompt() {
-    // Show the scroll prompt
     gsap.to(scrollPromptElement, { opacity: 1, duration: 1, delay: 0.5 });
-
-    // Add scroll event listener to trigger the main intro
-    window.addEventListener('wheel', handleScrollToEnter, { once: true }); // 'once: true' makes it fire only once
-    window.addEventListener('touchstart', handleScrollToEnter, { once: true }); // For mobile touch
+    window.addEventListener('wheel', handleScrollToEnter, { once: true });
+    window.addEventListener('touchstart', handleScrollToEnter, { once: true });
 }
 
-// --- New: Handler for scroll event ---
 function handleScrollToEnter() {
-    if (hasScrolled) return; // Prevent multiple triggers
+    if (hasScrolled) return;
     hasScrolled = true;
 
-    // Fade out scroll prompt
     gsap.to(scrollPromptElement, { opacity: 0, duration: 0.5 });
 
-    // Initialize the Three.js scene and start the Stargate entry
     startStargateEntry();
 }
 
-
-// --- startStargateEntry for Wormhole Effect ---
+// --- Modified: startStargateEntry (now calls create3DText after wormhole) ---
 function startStargateEntry() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
@@ -204,7 +201,6 @@ function startStargateEntry() {
         scene.add(ring);
     }
 
-
     // --- The Grid (Can be part of the wormhole or a transition) ---
     const divisions = 50;
     const gridSize = 1000;
@@ -239,20 +235,19 @@ function startStargateEntry() {
         x: cameraViews.home.position.x,
         y: cameraViews.home.position.y,
         z: cameraViews.home.position.z,
-        duration: 8, // Longer duration for wormhole
+        duration: 8,
         ease: "power3.inOut",
         onUpdate: () => {
             camera.lookAt(0, 0, 0);
-            // Move rings and stars towards camera for wormhole effect
             stargateRings.forEach(ring => {
-                ring.position.z += 5; // Adjust speed
+                ring.position.z += 5;
                 if (ring.position.z > camera.position.z + 10) {
                     ring.position.z = -(streamLength / 2) - maxRingRadius;
                 }
             });
             starGeometry.attributes.position.array.forEach((val, i) => {
-                if (i % 3 === 2) { // Z-coordinate
-                    starGeometry.attributes.position.array[i] += 5; // Adjust speed
+                if (i % 3 === 2) {
+                    starGeometry.attributes.position.array[i] += 5;
                     if (starGeometry.attributes.position.array[i] > camera.position.z + 50) {
                         starGeometry.attributes.position.array[i] -= streamLength;
                     }
@@ -262,7 +257,145 @@ function startStargateEntry() {
         },
         onComplete: () => {
             console.log("Stargate / Wormhole Entry complete!");
-            // Fade out loading screen (which now also includes the scroll prompt)
+            // --- New: Now trigger the Logo/Naming Reveal (Scene 3) ---
+            revealNameAndTitles();
+        }
+    });
+
+    window.addEventListener('resize', onWindowResize, false);
+    animate();
+}
+
+// --- New: Load Font and Create 3D Text ---
+function loadFontAndCreateText() {
+    const fontLoader = new FontLoader();
+    // IMPORTANT: Make sure this path to your font file is correct!
+    fontLoader.load('./assets/fonts/helvetiker_regular.typeface.json', function (font) {
+        loadedFont = font; // Store the font for later use if needed
+
+        const mainTitleText = "P. SALMANUL FARIS";
+        const subTitleText = "Certified Penetration Tester • Full Stack Developer • Physicist";
+
+        // Main Title
+        const mainTitleGeometry = new TextGeometry(mainTitleText, {
+            font: font,
+            size: 8, // Adjust size as needed
+            height: 1, // Depth of the text
+            curveSegments: 12,
+            bevelEnabled: true,
+            bevelThickness: 0.5,
+            bevelSize: 0.2,
+            bevelOffset: 0,
+            bevelSegments: 5
+        });
+        mainTitleGeometry.center(); // Center the text geometry
+        const mainTitleMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00ffff, // Neon Cyan
+            transparent: true,
+            opacity: 0, // Start hidden
+            blending: THREE.AdditiveBlending // For glow
+        });
+        mainTitle3D = new THREE.Mesh(mainTitleGeometry, mainTitleMaterial);
+        mainTitle3D.position.set(0, 5, -20); // Position it in the scene
+        scene.add(mainTitle3D);
+
+        // Subtitle
+        const subTitleGeometry = new TextGeometry(subTitleText, {
+            font: font,
+            size: 1.5,
+            height: 0.3,
+            curveSegments: 8,
+            bevelEnabled: true,
+            bevelThickness: 0.1,
+            bevelSize: 0.05,
+            bevelOffset: 0,
+            bevelSegments: 3
+        });
+        subTitleGeometry.center();
+        const subTitleMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00ff00, // Green
+            transparent: true,
+            opacity: 0, // Start hidden
+            blending: THREE.AdditiveBlending
+        });
+        subTitle3D = new THREE.Mesh(subTitleGeometry, subTitleMaterial);
+        subTitle3D.position.set(0, 0, -20); // Position below main title
+        scene.add(subTitle3D);
+
+        // Hide main UI elements until after reveal
+        // (These will be shown when the loading screen fades out)
+        // terminalContainer, navNodes, audioControls, digitalClockElement are not yet defined here
+        // as they are created after the loading screen is hidden.
+        // We'll manage their appearance in the revealNameAndTitles function.
+
+        console.log("3D Text loaded and added to scene, but hidden.");
+
+    }, undefined, function (error) {
+        console.error('An error happened loading the font:', error);
+        // Fallback: If font fails to load, proceed to main UI without 3D text intro
+        revealNameAndTitles(true); // Indicate error to skip 3D text reveal
+    });
+}
+
+// --- New: Reveal Name and Titles after Wormhole ---
+function revealNameAndTitles(fontLoadError = false) {
+    if (fontLoadError || !mainTitle3D || !subTitle3D) {
+        // If font failed or objects not created, directly fade out loading screen
+        console.warn("Skipping 3D text reveal due to font loading error or missing objects.");
+        gsap.to(loadingScreen, {
+            opacity: 0,
+            duration: 1,
+            onComplete: () => {
+                loadingScreen.style.display = 'none';
+                setupTerminal();
+                setupNavNodes();
+                setupAudio();
+                setupDigitalClock();
+                isCameraAnimating = false;
+            }
+        });
+        return;
+    }
+
+    // Camera animation: move camera closer to the text
+    gsap.to(camera.position, {
+        x: 0,
+        y: 0,
+        z: 30, // Position for viewing the text
+        duration: 2, // Smooth transition from wormhole to text view
+        ease: "power2.inOut",
+        onUpdate: () => {
+            camera.lookAt(0, 0, -20); // Ensure camera looks at the text
+        }
+    });
+
+    // Animate 3D text appearance
+    gsap.to(mainTitle3D.material, { opacity: 1, duration: 1.5, delay: 1, ease: "power2.out" });
+    gsap.to(subTitle3D.material, { opacity: 1, duration: 1.5, delay: 1.5, ease: "power2.out" });
+
+    // Optional: Animate text position or rotation for extra effect
+    gsap.fromTo(mainTitle3D.position,
+        { y: mainTitle3D.position.y + 5, z: mainTitle3D.position.z - 10 },
+        { y: mainTitle3D.position.y, z: mainTitle3D.position.z, duration: 2, delay: 0.5, ease: "power3.out" }
+    );
+    gsap.fromTo(subTitle3D.position,
+        { y: subTitle3D.position.y - 5, z: subTitle3D.position.z - 10 },
+        { y: subTitle3D.position.y, z: subTitle3D.position.z, duration: 2, delay: 1, ease: "power3.out" }
+    );
+
+    // Apply glitch/flicker effect after initial appearance
+    // We'll manage the glitch class from JS, as it's a DOM element. For 3D text,
+    // we'd manipulate material properties or apply post-processing shaders (more advanced).
+    // For now, let's just make them appear smoothly.
+
+    // Transition background to blueprint grid (Placeholder: change scene background color)
+    // This will be replaced with actual texture loading for a blueprint grid later.
+    gsap.to(scene.background, {
+        r: 0.1, g: 0.1, b: 0.2, // Dark blue for blueprint base
+        duration: 2,
+        delay: 2, // After text appears
+        onComplete: () => {
+            // After name reveal, fade out loading screen
             gsap.to(loadingScreen, {
                 opacity: 0,
                 duration: 1,
@@ -279,8 +412,13 @@ function startStargateEntry() {
         }
     });
 
-    window.addEventListener('resize', onWindowResize, false);
-    animate(); // Start the main animation loop for 3D content
+    // Hide stargate rings and stars after transition if needed
+    // For now, they will still be in the scene and animate.
+    // We might want to remove them or transition their opacity out.
+    // gsap.to(stars.material, { opacity: 0, duration: 1, delay: 2 });
+    // stargateRings.forEach(ring => {
+    //     gsap.to(ring.material, { opacity: 0, duration: 1, delay: 2 });
+    // });
 }
 
 
@@ -319,7 +457,6 @@ function onMouseMove(event) {
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 }
 function onClick(event) {
-    // Ensure terminalContainer exists before checking its style
     if (!terminalContainer || terminalContainer.style.pointerEvents !== 'auto' || isCameraAnimating) return;
     raycaster.setFromCamera(mouse, camera);
     const intersects = raycaster.intersectObjects(navNodes);
@@ -490,16 +627,16 @@ function onWindowResize() {
 function animate() {
     requestAnimationFrame(animate);
 
+    // Cube (will be replaced, but keeping for now if it's there)
     if (cube) {
         cube.rotation.x += 0.005;
         cube.rotation.y += 0.005;
     }
 
-    if (stars && !hasScrolled) { // Stars for loading screen, can be simpler
-        // During the boot sequence, stars can just rotate subtly
-        stars.rotation.y += 0.00005;
-        stars.rotation.x += 0.00002;
-    } else if (stars && hasScrolled) { // Stars for wormhole effect
+    // Stars & Rings for wormhole effect
+    // These animations should primarily run during the stargate entry itself
+    // After the camera lands in the logo reveal, they might fade out or stop
+    if (hasScrolled && isCameraAnimating) { // Only animate during the stargate fly-in
         stars.geometry.attributes.position.array.forEach((val, i) => {
             if (i % 3 === 2) { // Z-coordinate
                 stars.geometry.attributes.position.array[i] += 5; // Wormhole speed
@@ -509,12 +646,8 @@ function animate() {
             }
         });
         stars.geometry.attributes.position.needsUpdate = true;
-    }
 
-    // Rings should only animate their Z position if stargate entry has started
-    if (stargateRings.length > 0 && hasScrolled) {
         stargateRings.forEach(ring => {
-            // GSAP handles their rotation, here we manage their Z position for the wormhole
             ring.position.z += 5; // Speed
             if (ring.position.z > camera.position.z + 10) {
                 ring.position.z = -1000 - 150; // Reset to far end
@@ -528,4 +661,10 @@ function animate() {
     }
 }
 
+// Call loadFontAndCreateText() BEFORE init() if you want to preload the font
+// or call it within startStargateEntry() if you want to load it while wormhole is active.
+// Let's call it before init to ensure font is ready as soon as possible.
+loadFontAndCreateText();
+
+// IMPORTANT: Call init() here to start the entire process
 init();
