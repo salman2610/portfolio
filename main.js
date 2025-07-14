@@ -2,7 +2,7 @@
 // AND THAT THE FILENAMES (INCLUDING CASE) MATCH EXACTLY IN YOUR GITHUB REPOSITORY:
 import * as THREE from './three.module.js'; // Points to local three.module.js
 import { FontLoader } from './FontLoader.js'; // Points to local FontLoader.js
-import { TextGeometry } from './TextGeometry.js'; // CORRECTED LINE: Removed extra '}'
+import { TextGeometry } from './TextGeometry.js'; // CORRECTED LINE: No extra '}'
 // If you are using GLTFLoader and OrbitControls, change these paths too:
 // import { GLTFLoader } from './GLTFLoader.js';
 // import { OrbitControls } from './OrbitControls.js';
@@ -278,8 +278,7 @@ function startStargateEntry() {
 // Load Font and Create 3D Text (called in init)
 function loadFontAndCreateText() {
     const fontLoader = new FontLoader();
-    // IMPORTANT: Path to your font file is now relative to main.js and assumed to be at the root.
-    // Ensure 'helvetiker_regular.typeface.json' is in the root of your GitHub repo.
+    // Path to your font file: it's at the root of your GitHub repo.
     fontLoader.load('./helvetiker_regular.typeface.json', function (font) { 
         loadedFont = font; 
 
