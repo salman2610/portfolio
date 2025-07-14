@@ -1,7 +1,6 @@
-import * as THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
-import { FontLoader } from 'https://unpkg.com/three@0.165.0/examples/jsm/loaders/FontLoader.js';
-import { TextGeometry } from 'https://unpkg.com/three@0.165.0/examples/jsm/geometries/TextGeometry.js';
-
+import * as THREE from './assets/lib/three/three.module.js';
+import { FontLoader } from './assets/lib/three/loaders/FontLoader.js';
+import { TextGeometry } from './assets/lib/three/geometries/TextGeometry.js';
 
 // Declare global variables for scene, camera, renderer, and objects
 let scene, camera, renderer;
@@ -141,7 +140,6 @@ function handleScrollToEnter() {
     startStargateEntry();
 }
 
-
 // startStargateEntry for Wormhole Effect
 function startStargateEntry() {
     scene = new THREE.Scene();
@@ -216,7 +214,6 @@ function startStargateEntry() {
         scene.add(ring);
     }
 
-
     // --- The Grid (Can be part of the wormhole or a transition) ---
     // Keeping for now, but consider removing if it clashes with wormhole effect
     const divisions = 50;
@@ -245,7 +242,6 @@ function startStargateEntry() {
     gsap.to(grid.material, {
         opacity: 0.4, duration: 2, repeat: -1, yoyo: true, ease: "sine.inOut"
     });
-
 
     // --- Cinematic Camera Fly-in Animation (Stargate/Wormhole journey) ---
     // Camera animates from far back (z:300) to its home view (z:15)
@@ -276,8 +272,7 @@ function startStargateEntry() {
 // Load Font and Create 3D Text (called in init)
 function loadFontAndCreateText() {
     const fontLoader = new FontLoader();
-    // IMPORTANT: Make sure this path to your font file is correct!
-    // Example: './assets/fonts/helvetiker_regular.typeface.json'
+    // Ensure the font file path is correct
     fontLoader.load('./assets/fonts/helvetiker_regular.typeface.json', function (font) {
         loadedFont = font; // Store the font for later use if needed
 
@@ -408,7 +403,6 @@ function revealNameAndTitles() {
         { y: subTitle3D.position.y, z: subTitle3D.position.z, duration: 2, delay: 1, ease: "power3.out" }
     );
 
-
     // Transition background color (simulating blueprint grid)
     gsap.to(scene.background, {
         r: 0.1, g: 0.1, b: 0.2, // Dark blue for blueprint base
@@ -434,7 +428,6 @@ function revealNameAndTitles() {
         }
     });
 }
-
 
 // --- Setup Navigation Nodes ---
 function setupNavNodes() {
@@ -610,6 +603,7 @@ function updateClock() {
         year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Kolkata'
     };
     const dateFormatter = new Intl.DateTimeFormat('en-US', dateOptions);
+    const dateString = dateFormatter.format(now);
     const [month, day, year] = dateString.split('/');
     const formattedDate = `${year}-${month}-${day}`;
     digitalClockElement.textContent = `${formattedDate} ${timeString} IST`;
@@ -623,10 +617,7 @@ function toggleGlitch() {
     }
 }
 
-
 // Handle window resizing to keep the scene responsive
-window.addEventListener('resize', onWindowResize, false);
-
 function onWindowResize() {
     if (camera) {
         camera.aspect = window.innerWidth / window.innerHeight;
@@ -669,15 +660,10 @@ function animate() {
         });
     }
 
-
     if (renderer && scene && camera) {
         renderer.render(scene, camera);
     }
 }
 
-// Call loadFontAndCreateText() BEFORE init() if you want to preload the font
-// This ensures the font is loaded before it's needed for TextGeometry.
-loadFontAndCreateText();
-
-// IMPORTANT: Call init() here to start the entire process
+// Call init() to start the entire process
 init();
