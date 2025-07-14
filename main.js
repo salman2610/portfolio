@@ -308,8 +308,8 @@ function loadFontAndCreateText() {
             blending: THREE.AdditiveBlending // For glow
         });
         mainTitle3D = new THREE.Mesh(mainTitleGeometry, mainTitleMaterial);
-        mainTitle3D.position.set(0, 5, -20); // Position it in the scene
-        //scene.add(mainTitle3D); // Add to scene only when revealing
+        mainTitle3D.position.set(0, 5, -20); // Position it in the scene relative to camera view
+        // We add it to scene in revealNameAndTitles()
 
         // Subtitle
         const subTitleGeometry = new TextGeometry(subTitleText, {
@@ -335,7 +335,7 @@ function loadFontAndCreateText() {
         });
         subTitle3D = new THREE.Mesh(subTitleGeometry, subTitleMaterial);
         subTitle3D.position.set(0, 0, -20); // Position below main title
-        //scene.add(subTitle3D); // Add to scene only when revealing
+        // We add it to scene in revealNameAndTitles()
 
         console.log("3D Text loaded and ready.");
 
@@ -343,7 +343,7 @@ function loadFontAndCreateText() {
         console.error('An error happened loading the font:', error);
         // Fallback: If font fails to load, directly fade out loading screen
         // and proceed to main UI without 3D text intro
-        console.warn("Skipping 3D text reveal due to font loading error.");
+        console.warn("Skipping 3D text reveal due to font loading error. Proceeding directly to main UI.");
         gsap.to(loadingScreen, {
             opacity: 0,
             duration: 1,
@@ -396,19 +396,19 @@ function revealNameAndTitles() {
         }
     });
 
-    // Animate 3D text appearance
+    // Animate 3D text appearance (fade in and subtle movement)
     gsap.to(mainTitle3D.material, { opacity: 1, duration: 1.5, delay: 1, ease: "power2.out" });
     gsap.to(subTitle3D.material, { opacity: 1, duration: 1.5, delay: 1.5, ease: "power2.out" });
 
-    // Animate text position or rotation for extra effect (emerging from mist/light)
     gsap.fromTo(mainTitle3D.position,
-        { y: mainTitle3D.position.y + 5, z: mainTitle3D.position.z - 10, opacity: 0 }, // Adjust initial opacity
+        { y: mainTitle3D.position.y + 5, z: mainTitle3D.position.z - 10 }, // Start position slightly different for emergence
         { y: mainTitle3D.position.y, z: mainTitle3D.position.z, duration: 2, delay: 0.5, ease: "power3.out" }
     );
     gsap.fromTo(subTitle3D.position,
-        { y: subTitle3D.position.y - 5, z: subTitle3D.position.z - 10, opacity: 0 }, // Adjust initial opacity
+        { y: subTitle3D.position.y - 5, z: subTitle3D.position.z - 10 }, // Start position slightly different for emergence
         { y: subTitle3D.position.y, z: subTitle3D.position.z, duration: 2, delay: 1, ease: "power3.out" }
     );
+
 
     // Transition background color (simulating blueprint grid)
     gsap.to(scene.background, {
@@ -431,7 +431,7 @@ function revealNameAndTitles() {
                 }
             });
             // You might want to remove stargate rings and stars here or fade them out
-            // For now, they will remain in the scene.
+            // For now, they will remain in the scene, potentially out of view.
         }
     });
 }
@@ -650,7 +650,7 @@ function animate() {
     // Stars & Rings for wormhole effect
     // These animations should primarily run during the stargate entry itself
     if (hasScrolled && isCameraAnimating) { // Only animate during the stargate fly-in
-        if (stars && stars.geometry && stars.geometry.attributes.position) { // Added checks
+        if (stars && stars.geometry && stars.geometry.attributes.position) {
             stars.geometry.attributes.position.array.forEach((val, i) => {
                 if (i % 3 === 2) { // Z-coordinate
                     stars.geometry.attributes.position.array[i] += 5; // Wormhole speed
