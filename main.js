@@ -5,7 +5,10 @@ import * as THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
 let scene, camera, renderer;
 let stars;
 let grid;
-let cube; // Keeping the cube for now as a placeholder object
+let cube;
+
+// New: Stargate Rings Array
+const stargateRings = [];
 
 // Navigation Nodes Variables
 const navNodes = [];
@@ -35,7 +38,7 @@ let isCameraAnimating = false;
 let digitalClockElement;
 let glitchInterval;
 
-// --- New/Modified: Loading/Boot Sequence Variables ---
+// Loading/Boot Sequence Variables
 let loadingScreen;
 let bootMessagesElement;
 let powerNodeContainer;
@@ -45,7 +48,7 @@ const bootSequenceMessages = [
     "> IDENTITY: P. Salmanul Faris",
     "> SYSTEM STATUS: FULL STACK OP • PEN TESTER • PHYSICIST",
     "> LOADING VISUAL CORE…",
-    "", // Small pause
+    "",
     "Decrypting past... Compiling skills...",
     "Analyzing quantum signature... Physics meets code...",
     "Establishing neural handshake...",
@@ -58,22 +61,17 @@ let bootSequenceComplete = false;
 
 
 function init() {
-    // --- New: Get elements for the boot sequence ---
     loadingScreen = document.getElementById('loading-screen');
     bootMessagesElement = document.getElementById('boot-messages');
     powerNodeContainer = document.getElementById('power-node-container');
 
-    // Start fading in the power node
     gsap.to(powerNodeContainer, { opacity: 1, duration: 1, delay: 0.5 });
-
-    // Start the boot sequence message typing animation
     startBootSequence();
 }
 
-// --- New: Function to handle typing effect for boot messages ---
 function startBootSequence() {
-    bootMessagesElement.textContent = ''; // Clear existing text
-    bootMessagesElement.classList.add('typed-text'); // Add typing cursor
+    bootMessagesElement.textContent = '';
+    bootMessagesElement.classList.add('typed-text');
 
     typingInterval = setInterval(() => {
         if (messageIndex < bootSequenceMessages.length) {
@@ -82,76 +80,116 @@ function startBootSequence() {
                 bootMessagesElement.textContent += currentLine.charAt(charIndex);
                 charIndex++;
             } else {
-                // End of current line, move to next after a delay
                 clearInterval(typingInterval);
                 setTimeout(() => {
                     messageIndex++;
                     charIndex = 0;
                     if (messageIndex < bootSequenceMessages.length) {
-                        bootMessagesElement.textContent = ''; // Clear for next line
-                        startBootSequence(); // Start typing next line
+                        bootMessagesElement.textContent = '';
+                        startBootSequence();
                     } else {
-                        // All messages typed, boot sequence complete
                         bootMessagesElement.classList.remove('typed-text');
                         bootSequenceComplete = true;
-                        // Trigger the Stargate/Wormhole (currently camera fly-in)
                         startStargateEntry();
                     }
-                }, 1000); // Pause before next line/transition
+                }, 1000);
             }
         }
-    }, 50); // Typing speed (milliseconds per character)
+    }, 50);
 }
 
-// --- New: Function to start the Stargate / Wormhole Entry (your existing camera fly-in) ---
+// --- Modified: startStargateEntry for Wormhole Effect ---
 function startStargateEntry() {
-    // 1. Three.js Scene Setup (Moved here from previous init)
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
-    scene.fog = new THREE.Fog(0x000000, 10, 200);
+    // Use a lighter fog for better visibility of rings, or keep black
+    scene.fog = new THREE.Fog(0x000000, 50, 400); // Adjust fog for wormhole depth
 
-    // 2. Camera: Defines what is visible in your scene
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 50, 150); // Starting position for the fly-in
+    // Camera starts further back for a longer "wormhole" journey
+    camera.position.set(0, 0, 300); // Start very far back
     camera.lookAt(0, 0, 0);
 
-    // 3. Renderer: Renders your scene onto a <canvas> element
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement); // Add canvas to body
+    document.body.appendChild(renderer.domElement);
 
-    // --- Add basic lighting ---
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
     directionalLight.position.set(1, 1, 1);
     scene.add(directionalLight);
 
-    // --- Placeholder objects (will be replaced by actual Stargate/Logo) ---
-    // The cube's initial position is set to be out of the way for the fly-in
-    cube = new THREE.Mesh(new THREE.BoxGeometry(5, 5, 5), new THREE.MeshBasicMaterial({ color: 0x00ff00 }));
-    cube.position.set(0, 10, -50);
-    scene.add(cube);
+    // Remove the placeholder cube for now, it doesn't fit the wormhole scene
+    // cube = new THREE.Mesh(new THREE.BoxGeometry(5, 5, 5), new THREE.MeshBasicMaterial({ color: 0x00ff00 }));
+    // cube.position.set(0, 10, -50);
+    // scene.add(cube);
 
-    // --- Create Starfield (Particle System) ---
+
+    // --- Modified Starfield for Particle Streams ---
+    // Make stars more concentrated around Z-axis and give them movement
     const starGeometry = new THREE.BufferGeometry();
     const starMaterial = new THREE.PointsMaterial({
-        color: 0xffffff, size: 0.1, transparent: true, blending: THREE.AdditiveBlending
+        color: 0xffffff,
+        size: 0.1,
+        transparent: true,
+        blending: THREE.AdditiveBlending
     });
+
     const starVertices = [];
-    const numStars = 10000;
-    const starFieldSize = 2000;
-    for (let i = 0; i < numStars; i++) {
-        const x = (Math.random() - 0.5) * starFieldSize;
-        const y = (Math.random() - 0.5) * starFieldSize;
-        const z = (Math.random() - 0.5) * starFieldSize;
+    const numStreamStars = 50000; // More stars for denser streams
+    const streamRadius = 50; // Stars closer to center
+    const streamLength = 1000; // Stars spread along Z-axis
+    for (let i = 0; i < numStreamStars; i++) {
+        const x = (Math.random() - 0.5) * streamRadius * 2;
+        const y = (Math.random() - 0.5) * streamRadius * 2;
+        const z = (Math.random() - 0.5) * streamLength - streamLength / 2; // Spread around origin
         starVertices.push(x, y, z);
     }
     starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
     stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
 
-    // --- Create Neon Grid (LineSegments) ---
+    // --- Create Stargate / Code Rings ---
+    const ringCount = 10;
+    const maxRingRadius = 150;
+    const ringThickness = 1;
+    const tubeRadius = 0.5; // Thinness of the torus tube
+
+    const ringMaterial = new THREE.MeshBasicMaterial({
+        color: 0x00ffff, // Cyan glow
+        transparent: true,
+        opacity: 0.5,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide // Important for seeing both sides of thin objects
+    });
+
+    for (let i = 0; i < ringCount; i++) {
+        const radius = maxRingRadius * (i / ringCount) + 30; // Rings get larger further away
+        const ringGeometry = new THREE.TorusGeometry(radius, tubeRadius, 16, 100); // Radius, tube, radialSegments, tubularSegments
+        const ring = new THREE.Mesh(ringGeometry, ringMaterial.clone()); // Clone material for potential unique animations later
+        ring.position.z = -i * (streamLength / ringCount); // Distribute along Z axis
+        ring.rotation.x = Math.random() * Math.PI; // Random initial rotation
+        ring.rotation.y = Math.random() * Math.PI;
+
+        // Animate individual ring rotation for dynamism
+        gsap.to(ring.rotation, {
+            x: `+=${Math.PI * 2}`, // Rotate indefinitely
+            y: `+=${Math.PI * 2}`,
+            z: `+=${Math.PI * 2}`,
+            duration: 10 + Math.random() * 5, // Randomize speed
+            repeat: -1,
+            ease: "none"
+        });
+
+        stargateRings.push(ring);
+        scene.add(ring);
+    }
+
+
+    // The grid might not make sense in a "wormhole" intro.
+    // Consider removing or making it very subtle if it conflicts with the new visuals.
+    // For now, let's keep it but be aware.
     const divisions = 50;
     const gridSize = 1000;
     const gridYPosition = -50;
@@ -179,25 +217,46 @@ function startStargateEntry() {
         opacity: 0.4, duration: 2, repeat: -1, yoyo: true, ease: "sine.inOut"
     });
 
-    // --- Cinematic Camera Fly-in Animation with GSAP (Scene 2's camera fly-in) ---
+
+    // --- Cinematic Camera Fly-in Animation (Scene 2's camera fly-in) ---
+    // Animate camera through the rings to the 'home' position
     gsap.to(camera.position, {
         x: cameraViews.home.position.x,
         y: cameraViews.home.position.y,
         z: cameraViews.home.position.z,
-        duration: 4, // Duration for the main fly-in
-        ease: "power2.out",
+        duration: 8, // Make the wormhole journey longer
+        ease: "power3.inOut",
         onUpdate: () => {
-            camera.lookAt(cameraViews.home.lookAt);
+            camera.lookAt(0, 0, 0); // Keep looking at the center
+            // Move rings and stars towards camera for wormhole effect
+            stargateRings.forEach(ring => {
+                ring.position.z += 5; // Adjust speed
+                if (ring.position.z > camera.position.z + 10) { // If ring passes camera, reset it
+                    ring.position.z = -(streamLength / 2) - maxRingRadius;
+                }
+            });
+            // Move stars directly
+            starGeometry.attributes.position.array.forEach((val, i) => {
+                if (i % 3 === 2) { // Z-coordinate
+                    starGeometry.attributes.position.array[i] += 5; // Adjust speed
+                    // Recycle stars that pass the camera
+                    if (starGeometry.attributes.position.array[i] > camera.position.z + 50) {
+                        starGeometry.attributes.position.array[i] -= streamLength;
+                    }
+                }
+            });
+            starGeometry.attributes.position.needsUpdate = true; // Crucial for updating geometry
         },
         onComplete: () => {
-            console.log("Main cinematic fly-in animation complete!");
-            // Once the 3D intro animation is complete, fade out the loading screen
+            console.log("Stargate / Wormhole Entry complete!");
+            // Transition to Logo/Naming Reveal (Scene 3)
+            // For now, this still triggers UI elements and fades loading screen
+            // We'll modify this next to introduce the 3D text and background change.
             gsap.to(loadingScreen, {
                 opacity: 0,
                 duration: 1,
                 onComplete: () => {
-                    loadingScreen.style.display = 'none'; // Hide completely
-                    // Now show other UI elements
+                    loadingScreen.style.display = 'none';
                     setupTerminal();
                     setupNavNodes();
                     setupAudio();
@@ -208,10 +267,7 @@ function startStargateEntry() {
         }
     });
 
-    // Handle window resizing to keep the scene responsive
     window.addEventListener('resize', onWindowResize, false);
-
-    // Start the animation loop after the scene is set up
     animate();
 }
 
@@ -251,7 +307,6 @@ function onMouseMove(event) {
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 }
 function onClick(event) {
-    // Ensure terminalContainer exists before checking its style
     if (!terminalContainer || terminalContainer.style.pointerEvents !== 'auto' || isCameraAnimating) return;
     raycaster.setFromCamera(mouse, camera);
     const intersects = raycaster.intersectObjects(navNodes);
@@ -422,24 +477,32 @@ function onWindowResize() {
 function animate() {
     requestAnimationFrame(animate);
 
-    // Only animate these if they exist (they are created in startStargateEntry)
+    // Only animate these if they exist
     if (cube) {
         cube.rotation.x += 0.005;
         cube.rotation.y += 0.005;
     }
-    if (stars) {
-        stars.rotation.y += 0.00005;
-        stars.rotation.x += 0.00002;
-    }
-    if (grid && grid.material) { // Ensure material exists for opacity animation
-        // Grid opacity is animated by GSAP, not here
+
+    // Animate stars for wormhole effect
+    if (stars && bootSequenceComplete) { // Only animate after boot sequence
+        // Simulate stars moving towards camera (for wormhole)
+        stars.geometry.attributes.position.array.forEach((val, i) => {
+            if (i % 3 === 2) { // Z-coordinate
+                stars.geometry.attributes.position.array[i] += 1; // Speed of stars moving forward
+                // Recycle stars that pass the camera
+                if (stars.geometry.attributes.position.array[i] > camera.position.z + 20) {
+                    stars.geometry.attributes.position.array[i] -= 1000; // Reset back along Z
+                }
+            }
+        });
+        stars.geometry.attributes.position.needsUpdate = true; // Crucial for updating geometry
     }
 
-    // Only render if scene and camera are initialized
+
     if (renderer && scene && camera) {
         renderer.render(scene, camera);
     }
 }
 
-// IMPORTANT: Call init() here to start the entire process, including the boot sequence
+// IMPORTANT: Call init() here to start the entire process
 init();
