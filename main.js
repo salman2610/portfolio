@@ -1,29 +1,13 @@
-// Ensure these imports use RELATIVE PATHS to the local files you uploaded:
-import * as THREE from './three.module.js'; // Points to local three.module.js
-import { FontLoader } from './FontLoader.js'; // Points to local FontLoader.js
-import { TextGeometry } from './TextGeometry.js'; // Points to local TextGeometry.js
-// If you are using GLTFLoader and OrbitControls, and have them locally, change their paths as well:
-// import { GLTFLoader } from './GLTFLoader.js';
-// import { OrbitControls } from './OrbitControls.js';
-// Otherwise, keep them as CDN links if you don't have local copies:
-import { GLTFLoader } from 'https://unpkg.com/three@0.165.0/examples/jsm/loaders/GLTFLoader.js';
-import { OrbitControls } from 'https://unpkg.com/three@0.165.0/examples/jsm/controls/OrbitControls.js';
-
-
-console.log('THREE loaded:', THREE);
-console.log('FontLoader loaded:', FontLoader);
-console.log('TextGeometry loaded:', TextGeometry);
-console.log('GLTFLoader loaded:', GLTFLoader);
-console.log('OrbitControls loaded:', OrbitControls);
-
+// Import Three.js
+import * as THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
 
 // Declare global variables for scene, camera, renderer, and objects
 let scene, camera, renderer;
 let stars;
 let grid;
-let cube; 
+let cube;
 
-// Stargate Rings Array
+// New: Stargate Rings Array
 const stargateRings = [];
 
 // Navigation Nodes Variables
@@ -58,16 +42,17 @@ let glitchInterval;
 let loadingScreen;
 let bootMessagesElement;
 let powerNodeContainer;
+// New: Scroll Prompt Element
 let scrollPromptElement;
-let hasScrolled = false; 
+let hasScrolled = false; // Flag to ensure scroll animation only plays once
 
 const bootSequenceMessages = [
     "> INIT_CORE_SEQUENCE",
     "> SCANNING SYSTEM BIOS…",
-    "> IDENTITY: P. SALMANUL FARIS",
+    "> IDENTITY: P. Salmanul Faris",
     "> SYSTEM STATUS: FULL STACK OP • PEN TESTER • PHYSICIST",
     "> LOADING VISUAL CORE…",
-    "", 
+    "",
     "Decrypting past... Compiling skills...",
     "Analyzing quantum signature... Physics meets code...",
     "Establishing neural handshake...",
@@ -78,32 +63,21 @@ let charIndex = 0;
 let typingInterval;
 let bootSequenceComplete = false;
 
-// New: 3D Text Variables
-let mainTitle3D;
-let subTitle3D;
-let loadedFont; 
 
 function init() {
-    // Get elements for the boot sequence
     loadingScreen = document.getElementById('loading-screen');
     bootMessagesElement = document.getElementById('boot-messages');
     powerNodeContainer = document.getElementById('power-node-container');
-    scrollPromptElement = document.getElementById('scroll-prompt');
+    scrollPromptElement = document.getElementById('scroll-prompt'); // Get scroll prompt element
 
-    // Start fading in the power node
     gsap.to(powerNodeContainer, { opacity: 1, duration: 1, delay: 0.5 });
-
-    // Start the boot sequence message typing animation
     startBootSequence();
-
-    // Preload font as early as possible so it's ready when needed
-    loadFontAndCreateText();
 }
 
-// Function to handle typing effect for boot messages
+// --- Function to handle typing effect for boot messages ---
 function startBootSequence() {
-    bootMessagesElement.textContent = ''; 
-    bootMessagesElement.classList.add('typed-text'); 
+    bootMessagesElement.textContent = '';
+    bootMessagesElement.classList.add('typed-text'); // Add typing cursor
 
     typingInterval = setInterval(() => {
         if (messageIndex < bootSequenceMessages.length) {
@@ -117,51 +91,57 @@ function startBootSequence() {
                     messageIndex++;
                     charIndex = 0;
                     if (messageIndex < bootSequenceMessages.length) {
-                        bootMessagesElement.textContent = ''; 
-                        startBootSequence(); 
+                        bootMessagesElement.textContent = '';
+                        startBootSequence();
                     } else {
+                        // All messages typed, boot sequence complete
                         bootMessagesElement.classList.remove('typed-text');
                         bootSequenceComplete = true;
+                        // New: Display scroll prompt instead of starting stargate directly
                         displayScrollPrompt();
                     }
-                }, 1000); 
+                }, 1000); // Pause before next line/transition
             }
         }
-    }, 50); 
+    }, 50); // Typing speed (milliseconds per character)
 }
 
-// Display Scroll Prompt and setup scroll listener
+// --- New: Display Scroll Prompt and setup scroll listener ---
 function displayScrollPrompt() {
+    // Show the scroll prompt
     gsap.to(scrollPromptElement, { opacity: 1, duration: 1, delay: 0.5 });
 
-    window.addEventListener('wheel', handleScrollToEnter, { once: true }); 
-    window.addEventListener('touchstart', handleScrollToEnter, { once: true }); 
+    // Add scroll event listener to trigger the main intro
+    window.addEventListener('wheel', handleScrollToEnter, { once: true }); // 'once: true' makes it fire only once
+    window.addEventListener('touchstart', handleScrollToEnter, { once: true }); // For mobile touch
 }
 
-// Handler for scroll event
+// --- New: Handler for scroll event ---
 function handleScrollToEnter() {
-    if (hasScrolled) return; 
+    if (hasScrolled) return; // Prevent multiple triggers
     hasScrolled = true;
 
+    // Fade out scroll prompt
     gsap.to(scrollPromptElement, { opacity: 0, duration: 0.5 });
 
+    // Initialize the Three.js scene and start the Stargate entry
     startStargateEntry();
 }
 
 
-// startStargateEntry for Wormhole Effect
+// --- startStargateEntry for Wormhole Effect ---
 function startStargateEntry() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
     scene.fog = new THREE.Fog(0x000000, 50, 400);
 
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 0, 300); 
+    camera.position.set(0, 0, 300);
     camera.lookAt(0, 0, 0);
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement); 
+    document.body.appendChild(renderer.domElement);
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
@@ -194,6 +174,7 @@ function startStargateEntry() {
     // --- Create Stargate / Code Rings ---
     const ringCount = 10;
     const maxRingRadius = 150;
+    const ringThickness = 1;
     const tubeRadius = 0.5;
 
     const ringMaterial = new THREE.MeshBasicMaterial({
@@ -258,158 +239,36 @@ function startStargateEntry() {
         x: cameraViews.home.position.x,
         y: cameraViews.home.position.y,
         z: cameraViews.home.position.z,
-        duration: 8, 
+        duration: 8, // Longer duration for wormhole
         ease: "power3.inOut",
         onUpdate: () => {
-            camera.lookAt(0, 0, 0); 
+            camera.lookAt(0, 0, 0);
+            // Move rings and stars towards camera for wormhole effect
+            stargateRings.forEach(ring => {
+                ring.position.z += 5; // Adjust speed
+                if (ring.position.z > camera.position.z + 10) {
+                    ring.position.z = -(streamLength / 2) - maxRingRadius;
+                }
+            });
+            starGeometry.attributes.position.array.forEach((val, i) => {
+                if (i % 3 === 2) { // Z-coordinate
+                    starGeometry.attributes.position.array[i] += 5; // Adjust speed
+                    if (starGeometry.attributes.position.array[i] > camera.position.z + 50) {
+                        starGeometry.attributes.position.array[i] -= streamLength;
+                    }
+                }
+            });
+            starGeometry.attributes.position.needsUpdate = true;
         },
         onComplete: () => {
             console.log("Stargate / Wormhole Entry complete!");
-            revealNameAndTitles();
-        }
-    });
-
-    window.addEventListener('resize', onWindowResize, false);
-
-    animate(); 
-}
-
-// Load Font and Create 3D Text (called in init)
-function loadFontAndCreateText() {
-    const fontLoader = new FontLoader();
-    // IMPORTANT: Path to your font file is now relative to main.js as uploaded to root.
-    fontLoader.load('./helvetiker_regular.typeface.json', function (font) { // Corrected path to root
-        loadedFont = font; 
-
-        const mainTitleText = "P. SALMANUL FARIS";
-        const subTitleText = "Certified Penetration Tester • Full Stack Developer • Physicist";
-
-        // Main Title
-        const mainTitleGeometry = new TextGeometry(mainTitleText, {
-            font: font,
-            size: 8, 
-            height: 1, 
-            curveSegments: 12,
-            bevelEnabled: true,
-            bevelThickness: 0.5,
-            bevelSize: 0.2,
-            bevelOffset: 0,
-            bevelSegments: 5
-        });
-        mainTitleGeometry.computeBoundingBox(); 
-        const mainTitleWidth = mainTitleGeometry.boundingBox.max.x - mainTitleGeometry.boundingBox.min.x;
-        mainTitleGeometry.translate(-mainTitleWidth / 2, 0, 0); 
-
-        const mainTitleMaterial = new THREE.MeshBasicMaterial({
-            color: 0x00ffff, 
-            transparent: true,
-            opacity: 0, 
-            blending: THREE.AdditiveBlending 
-        });
-        mainTitle3D = new THREE.Mesh(mainTitleGeometry, mainTitleMaterial);
-        mainTitle3D.position.set(0, 5, -20); 
-
-        // Subtitle
-        const subTitleGeometry = new TextGeometry(subTitleText, {
-            font: font,
-            size: 1.5,
-            height: 0.3,
-            curveSegments: 8,
-            bevelEnabled: true,
-            bevelThickness: 0.1,
-            bevelSize: 0.05,
-            bevelOffset: 0,
-            bevelSegments: 3
-        });
-        subTitleGeometry.computeBoundingBox();
-        const subTitleWidth = subTitleGeometry.boundingBox.max.x - subTitleGeometry.boundingBox.min.x;
-        subTitleGeometry.translate(-subTitleWidth / 2, 0, 0);
-
-        const subTitleMaterial = new THREE.MeshBasicMaterial({
-            color: 0x00ff00, 
-            transparent: true,
-            opacity: 0, 
-            blending: THREE.AdditiveBlending
-        });
-        subTitle3D = new THREE.Mesh(subTitleGeometry, subTitleMaterial);
-        subTitle3D.position.set(0, 0, -20); 
-
-        console.log("3D Text loaded and ready.");
-
-    }, undefined, function (error) {
-        console.error('An error happened loading the font:', error);
-        console.warn("Skipping 3D text reveal due to font loading error. Proceeding directly to main UI.");
-        gsap.to(loadingScreen, {
-            opacity: 0,
-            duration: 1,
-            onComplete: () => {
-                loadingScreen.style.display = 'none';
-                setupTerminal();
-                setupNavNodes();
-                setupAudio();
-                setupDigitalClock();
-                isCameraAnimating = false;
-            }
-        });
-    });
-}
-
-// Reveal Name and Titles after Wormhole
-function revealNameAndTitles() {
-    if (!mainTitle3D || !subTitle3D) {
-        console.warn("3D text objects not ready, proceeding directly to main UI.");
-        gsap.to(loadingScreen, {
-            opacity: 0,
-            duration: 1,
-            onComplete: () => {
-                loadingScreen.style.display = 'none';
-                setupTerminal();
-                setupNavNodes();
-                setupAudio();
-                setupDigitalClock();
-                isCameraAnimating = false;
-            }
-        });
-        return;
-    }
-
-    scene.add(mainTitle3D);
-    scene.add(subTitle3D);
-
-    gsap.to(camera.position, {
-        x: 0,
-        y: 0,
-        z: 30, 
-        duration: 2, 
-        ease: "power2.inOut",
-        onUpdate: () => {
-            camera.lookAt(0, 0, -20); 
-        }
-    });
-
-    gsap.to(mainTitle3D.material, { opacity: 1, duration: 1.5, delay: 1, ease: "power2.out" });
-    gsap.to(subTitle3D.material, { opacity: 1, duration: 1.5, delay: 1.5, ease: "power2.out" });
-
-    gsap.fromTo(mainTitle3D.position,
-        { y: mainTitle3D.position.y + 5, z: mainTitle3D.position.z - 10 }, 
-        { y: mainTitle3D.position.y, z: mainTitle3D.position.z, duration: 2, delay: 0.5, ease: "power3.out" }
-    );
-    gsap.fromTo(subTitle3D.position,
-        { y: subTitle3D.position.y - 5, z: subTitle3D.position.z - 10 }, 
-        { y: subTitle3D.position.y, z: subTitle3D.position.z, duration: 2, delay: 1, ease: "power3.out" }
-    );
-
-
-    gsap.to(scene.background, {
-        r: 0.1, g: 0.1, b: 0.2, 
-        duration: 2,
-        delay: 2, 
-        onComplete: () => {
+            // Fade out loading screen (which now also includes the scroll prompt)
             gsap.to(loadingScreen, {
                 opacity: 0,
                 duration: 1,
                 onComplete: () => {
                     loadingScreen.style.display = 'none';
+                    // Now show other UI elements for the main experience
                     setupTerminal();
                     setupNavNodes();
                     setupAudio();
@@ -419,6 +278,9 @@ function revealNameAndTitles() {
             });
         }
     });
+
+    window.addEventListener('resize', onWindowResize, false);
+    animate(); // Start the main animation loop for 3D content
 }
 
 
@@ -457,6 +319,7 @@ function onMouseMove(event) {
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 }
 function onClick(event) {
+    // Ensure terminalContainer exists before checking its style
     if (!terminalContainer || terminalContainer.style.pointerEvents !== 'auto' || isCameraAnimating) return;
     raycaster.setFromCamera(mouse, camera);
     const intersects = raycaster.intersectObjects(navNodes);
@@ -534,7 +397,7 @@ function handleCommand(command) {
         case 'projects': appendToTerminal("Loading projects...", 'info'); handleNodeClick("Projects"); break;
         case 'experience': appendToTerminal("Loading experience...", 'info'); handleNodeClick("Experience"); break;
         case 'contact': appendToTerminal("Loading contact info...", 'info'); handleNodeClick("Contact"); break;
-        case 'resume': appendToTerminal("Initiating resume download...", 'info'); downloadResume('./P.SalmanulFaris-Resume.pdf'); break; 
+        case 'resume': appendToTerminal("Initiating resume download...", 'info'); downloadResume('./P.SalmanulFaris (PT) Resume.pdf'); break;
         case 'home': appendToTerminal("Returning to home view...", 'info'); handleNodeClick("home"); break;
         case 'clear': terminalOutput.innerHTML = ''; break;
         case '': break;
@@ -596,6 +459,7 @@ function updateClock() {
         year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Kolkata'
     };
     const dateFormatter = new Intl.DateTimeFormat('en-US', dateOptions);
+    const dateString = dateFormatter.format(now);
     const [month, day, year] = dateString.split('/');
     const formattedDate = `${year}-${month}-${day}`;
     digitalClockElement.textContent = `${formattedDate} ${timeString} IST`;
@@ -631,23 +495,29 @@ function animate() {
         cube.rotation.y += 0.005;
     }
 
-    if (hasScrolled && isCameraAnimating) {
-        if (stars && stars.geometry && stars.geometry.attributes.position) {
-            stars.geometry.attributes.position.array.forEach((val, i) => {
-                if (i % 3 === 2) {
-                    stars.geometry.attributes.position.array[i] += 5;
-                    if (stars.geometry.attributes.position.array[i] > camera.position.z + 50) {
-                        stars.geometry.attributes.position.array[i] -= 1000;
-                    }
+    if (stars && !hasScrolled) { // Stars for loading screen, can be simpler
+        // During the boot sequence, stars can just rotate subtly
+        stars.rotation.y += 0.00005;
+        stars.rotation.x += 0.00002;
+    } else if (stars && hasScrolled) { // Stars for wormhole effect
+        stars.geometry.attributes.position.array.forEach((val, i) => {
+            if (i % 3 === 2) { // Z-coordinate
+                stars.geometry.attributes.position.array[i] += 5; // Wormhole speed
+                if (stars.geometry.attributes.position.array[i] > camera.position.z + 50) {
+                    stars.geometry.attributes.position.array[i] -= 1000;
                 }
-            });
-            stars.geometry.attributes.position.needsUpdate = true;
-        }
+            }
+        });
+        stars.geometry.attributes.position.needsUpdate = true;
+    }
 
+    // Rings should only animate their Z position if stargate entry has started
+    if (stargateRings.length > 0 && hasScrolled) {
         stargateRings.forEach(ring => {
-            ring.position.z += 5;
+            // GSAP handles their rotation, here we manage their Z position for the wormhole
+            ring.position.z += 5; // Speed
             if (ring.position.z > camera.position.z + 10) {
-                ring.position.z = -1000 - 150;
+                ring.position.z = -1000 - 150; // Reset to far end
             }
         });
     }
@@ -657,7 +527,5 @@ function animate() {
         renderer.render(scene, camera);
     }
 }
-
-loadFontAndCreateText();
 
 init();
