@@ -1,4 +1,3 @@
-// Ensure these imports are from the CDN (unpkg.com) for maximum reliability:
 import * as THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
 import { FontLoader } from 'https://unpkg.com/three@0.165.0/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'https://unpkg.com/three@0.165.0/examples/jsm/geometries/TextGeometry.js'; // THIS LINE IS CORRECTED
