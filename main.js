@@ -1,6 +1,8 @@
-import * as THREE from './assets/three.module.js';
-import { FontLoader } from './assets/loaders/FontLoader.js';
-import { TextGeometry } from './assets/geometries/TextGeometry.js';
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
+import { FontLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/FontLoader.js';
+import { TextGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/geometries/TextGeometry.js';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 
 console.log('THREE loaded:', THREE);
 console.log('FontLoader loaded:', FontLoader);
