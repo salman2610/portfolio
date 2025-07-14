@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>P. Salmanul Faris - Immersive Portfolio</title>
     <style>
+        /* FIX: @import rule MUST be at the very top of the stylesheet */
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
         /* Basic styling to make the canvas fill the screen */
         body { margin: 0; overflow: hidden; background-color: #000; }
         canvas { display: block; }
@@ -76,7 +79,6 @@
             white-space: pre-wrap; /* For line breaks */
             max-width: 80%;
             min-height: 5em; /* Ensure space for messages */
-            /* REMOVED: opacity: 0; from previous version to ensure visibility */
         }
 
         /* Typing cursor effect */
@@ -153,8 +155,6 @@
         #terminal-input-line { display: flex; align-items: center; }
         #terminal-prompt { color: #00ffff; margin-right: 5px; }
         #terminal-input { flex-grow: 1; background-color: transparent; border: none; outline: none; color: #00ff00; caret-color: #00ff00; font-family: 'Share Tech Mono', monospace; font-size: inherit; padding: 0; }
-        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
-
         /* Audio Controls Styling (No change from previous) */
         #audio-controls {
             position: fixed;
