@@ -1,7 +1,12 @@
-// Ensure these imports are from the CDN (unpkg.com) for maximum reliability:
-import * as THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
-import { FontLoader } from 'https://unpkg.com/three@0.165.0/examples/jsm/loaders/FontLoader.js';
-import { TextGeometry } from 'https://unpkg.com/three@0.165.0/examples/jsm/geometries/TextGeometry.js';
+// Ensure these imports use RELATIVE PATHS to the local files you uploaded,
+// AND THAT THE FILENAMES (INCLUDING CASE) MATCH EXACTLY IN YOUR GITHUB REPOSITORY:
+import * as THREE from './three.module.js'; // Points to local three.module.js
+import { FontLoader } } from './FontLoader.js'; // Points to local FontLoader.js
+import { TextGeometry } } from './TextGeometry.js'; // Points to local TextGeometry.js
+// If you have local GLTFLoader.js and OrbitControls.js, change these paths too:
+// import { GLTFLoader } from './GLTFLoader.js';
+// import { OrbitControls } from './OrbitControls.js';
+// Otherwise, keep them as CDN links:
 import { GLTFLoader } from 'https://unpkg.com/three@0.165.0/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'https://unpkg.com/three@0.165.0/examples/jsm/controls/OrbitControls.js';
 
@@ -274,7 +279,7 @@ function startStargateEntry() {
 function loadFontAndCreateText() {
     const fontLoader = new FontLoader();
     // IMPORTANT: Path to your font file is now relative to main.js and assumed to be at the root.
-    // If you moved it to assets/ or assets/fonts/, you MUST update this path.
+    // Ensure 'helvetiker_regular.typeface.json' is in the root of your GitHub repo.
     fontLoader.load('./helvetiker_regular.typeface.json', function (font) { 
         loadedFont = font; 
 
