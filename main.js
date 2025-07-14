@@ -276,7 +276,7 @@ function startStargateEntry() {
 // Load Font and Create 3D Text (called in init)
 function loadFontAndCreateText() {
     const fontLoader = new FontLoader();
-    fontLoader.load('./assets/helvetiker_regular.typeface.json', function (font) {
+    fontLoader.load('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/helvetiker_regular.typeface.json', function (font) {
         loadedFont = font;
 
         const mainTitleText = "P. SALMANUL FARIS";
@@ -581,8 +581,8 @@ function setupDigitalClock() {
 }
 function updateClock() {
     const now = new Date();
-    now.setHours(11); // Set to 11:30 AM IST
-    now.setMinutes(30);
+    now.setHours(11); // Set to 11:56 AM IST
+    now.setMinutes(56);
     now.setSeconds(0);
     const options = {
         hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Asia/Kolkata'
