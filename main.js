@@ -1,8 +1,6 @@
-// Import Three.js
+
 import * as THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
-// New: Import FontLoader
 import { FontLoader } from 'https://unpkg.com/three@0.165.0/examples/jsm/loaders/FontLoader.js';
-// New: Import TextGeometry
 import { TextGeometry } from 'https://unpkg.com/three@0.165.0/examples/jsm/geometries/TextGeometry.js';
 
 
