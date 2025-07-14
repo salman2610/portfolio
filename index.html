@@ -9,7 +9,7 @@
         body { margin: 0; overflow: hidden; background-color: #000; }
         canvas { display: block; }
 
-        /* --- New/Modified: Loading Screen Styling (Scene 1: Boot Sequence) --- */
+        /* --- Loading Screen Styling (Scene 1: Boot Sequence & Scroll Prompt) --- */
         #loading-screen {
             position: fixed;
             top: 0;
@@ -24,9 +24,9 @@
             font-family: 'Share Tech Mono', monospace;
             color: #00ff00;
             z-index: 9999;
-            opacity: 1;
-            transition: opacity 1.5s ease-out;
-            pointer-events: all;
+            opacity: 1; /* Start fully visible */
+            transition: opacity 1.5s ease-out; /* Smooth fade-out after main intro */
+            pointer-events: all; /* Interactive during load */
         }
 
         #power-node-container {
@@ -76,7 +76,7 @@
             white-space: pre-wrap; /* For line breaks */
             max-width: 80%;
             min-height: 5em; /* Ensure space for messages */
-            opacity: 0; /* Will fade in with typing effect */
+            /* REMOVED: opacity: 0; -> Now directly visible as typed */
         }
 
         /* Typing cursor effect */
@@ -89,6 +89,35 @@
         @keyframes blink-caret {
             from, to { border-color: transparent }
             50% { border-color: #00ff00; } /* Cursor color */
+        }
+
+        /* New: Scroll Prompt Styling */
+        #scroll-prompt {
+            position: absolute;
+            bottom: 100px; /* Position below messages */
+            font-size: 1.2em;
+            color: #00ffff; /* Neon cyan */
+            text-shadow: 0 0 10px #00ffff;
+            opacity: 0; /* Start hidden */
+            transition: opacity 0.5s ease-in-out;
+            pointer-events: none; /* Initially non-interactive */
+            text-align: center;
+        }
+
+        #scroll-arrow {
+            display: block;
+            margin: 10px auto;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 15px solid #00ffff; /* Cyan arrow */
+            animation: bounce-arrow 1s infinite alternate;
+        }
+
+        @keyframes bounce-arrow {
+            from { transform: translateY(0); }
+            to { transform: translateY(10px); }
         }
 
         /* --- End Loading Screen Styling --- */
@@ -176,6 +205,10 @@
             <div id="power-node-inner"></div>
         </div>
         <div id="boot-messages"></div>
+        <div id="scroll-prompt">
+            Scroll to Enter Digital Core
+            <span id="scroll-arrow"></span>
+        </div>
     </div>
     <script type="module" src="./main.js"></script>
 
