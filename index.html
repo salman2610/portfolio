@@ -5,197 +5,196 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>P. Salmanul Faris - Immersive Portfolio</title>
     <style>
-/* FIX: @import rule MUST be the very first line inside the <style> tag.
-   Ensure no empty lines or spaces are before this @import statement. */
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        /* Basic styling to make the canvas fill the screen */
+        body { margin: 0; overflow: hidden; background-color: #000; }
+        canvas { display: block; }
 
-/* All other CSS rules should come after the @import rule. */
-body { margin: 0; overflow: hidden; background-color: #000; }
-canvas { display: block; }
+        /* --- Loading Screen Styling (Scene 1: Boot Sequence & Scroll Prompt) --- */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Share Tech Mono', monospace;
+            color: #00ff00;
+            z-index: 9999;
+            opacity: 1; /* Start fully visible */
+            transition: opacity 1.5s ease-out; /* Smooth fade-out after main intro */
+            pointer-events: all; /* Interactive during load */
+        }
 
-/* --- Loading Screen Styling (Scene 1: Boot Sequence & Scroll Prompt) --- */
-#loading-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: #000;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-family: 'Share Tech Mono', monospace;
-    color: #00ff00;
-    z-index: 9999;
-    opacity: 1; /* Start fully visible */
-    transition: opacity 1.5s ease-out; /* Smooth fade-out after main intro */
-    pointer-events: all; /* Interactive during load */
-}
+        #power-node-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin-bottom: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0; /* Start hidden, fade in */
+        }
 
-#power-node-container {
-    position: relative;
-    width: 100px;
-    height: 100px;
-    margin-bottom: 50px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    opacity: 0; /* Start hidden, fade in */
-}
+        #power-node-outer, #power-node-inner {
+            border-radius: 50%;
+            position: absolute;
+        }
 
-#power-node-outer, #power-node-inner {
-    border-radius: 50%;
-    position: absolute;
-}
+        #power-node-outer {
+            width: 100px;
+            height: 100px;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 15px #00ffff, inset 0 0 15px #00ffff;
+            animation: pulse-outer 2s infinite alternate ease-in-out;
+        }
 
-#power-node-outer {
-    width: 100px;
-    height: 100px;
-    border: 2px solid #00ffff;
-    box-shadow: 0 0 15px #00ffff, inset 0 0 15px #00ffff;
-    animation: pulse-outer 2s infinite alternate ease-in-out;
-}
+        #power-node-inner {
+            width: 50px;
+            height: 50px;
+            background-color: #00ff00;
+            box-shadow: 0 0 10px #00ff00, inset 0 0 10px #00ff00;
+            animation: pulse-inner 1.5s infinite alternate ease-in-out;
+        }
 
-#power-node-inner {
-    width: 50px;
-    height: 50px;
-    background-color: #00ff00;
-    box-shadow: 0 0 10px #00ff00, inset 0 0 10px #00ff00;
-    animation: pulse-inner 1.5s infinite alternate ease-in-out;
-}
+        @keyframes pulse-outer {
+            from { transform: scale(1); opacity: 1; }
+            to { transform: scale(1.1); opacity: 0.8; }
+        }
+        @keyframes pulse-inner {
+            from { transform: scale(1); opacity: 0.7; }
+            to { transform: scale(1.2); opacity: 1; }
+        }
 
-@keyframes pulse-outer {
-    from { transform: scale(1); opacity: 1; }
-    to { transform: scale(1.1); opacity: 0.8; }
-}
-@keyframes pulse-inner {
-    from { transform: scale(1); opacity: 0.7; }
-    to { transform: scale(1.2); opacity: 1; }
-}
+        #boot-messages {
+            font-size: 1.5em;
+            text-align: center;
+            white-space: pre-wrap; /* For line breaks */
+            max-width: 80%;
+            min-height: 5em; /* Ensure space for messages */
+            /* REMOVED: opacity: 0; -> Now directly visible as typed */
+        }
 
-#boot-messages {
-    font-size: 1.5em;
-    text-align: center;
-    white-space: pre-wrap; /* For line breaks */
-    max-width: 80%;
-    min-height: 5em; /* Ensure space for messages */
-}
+        /* Typing cursor effect */
+        .typed-text::after {
+            content: '|';
+            display: inline-block;
+            animation: blink-caret 0.75s step-end infinite;
+        }
 
-/* Typing cursor effect */
-.typed-text::after {
-    content: '|';
-    display: inline-block;
-    animation: blink-caret 0.75s step-end infinite;
-}
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: #00ff00; } /* Cursor color */
+        }
 
-@keyframes blink-caret {
-    from, to { border-color: transparent }
-    50% { border-color: #00ff00; } /* Cursor color */
-}
+        /* New: Scroll Prompt Styling */
+        #scroll-prompt {
+            position: absolute;
+            bottom: 100px; /* Position below messages */
+            font-size: 1.2em;
+            color: #00ffff; /* Neon cyan */
+            text-shadow: 0 0 10px #00ffff;
+            opacity: 0; /* Start hidden */
+            transition: opacity 0.5s ease-in-out;
+            pointer-events: none; /* Initially non-interactive */
+            text-align: center;
+        }
 
-/* New: Scroll Prompt Styling */
-#scroll-prompt {
-    position: absolute;
-    bottom: 100px; /* Position below messages */
-    font-size: 1.2em;
-    color: #00ffff; /* Neon cyan */
-    text-shadow: 0 0 10px #00ffff;
-    opacity: 0; /* Start hidden */
-    transition: opacity 0.5s ease-in-out;
-    pointer-events: none; /* Initially non-interactive */
-    text-align: center;
-}
+        #scroll-arrow {
+            display: block;
+            margin: 10px auto;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 15px solid #00ffff; /* Cyan arrow */
+            animation: bounce-arrow 1s infinite alternate;
+        }
 
-#scroll-arrow {
-    display: block;
-    margin: 10px auto;
-    width: 0;
-    height: 0;
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    border-top: 15px solid #00ffff; /* Cyan arrow */
-    animation: bounce-arrow 1s infinite alternate;
-}
+        @keyframes bounce-arrow {
+            from { transform: translateY(0); }
+            to { transform: translateY(10px); }
+        }
 
-@keyframes bounce-arrow {
-    from { transform: translateY(0); }
-    to { transform: translateY(10px); }
-}
-
-/* --- End Loading Screen Styling --- */
+        /* --- End Loading Screen Styling --- */
 
 
-/* Terminal Styling (No change from previous) */
-#terminal-container {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    width: 500px;
-    max-width: 90vw;
-    height: 300px;
-    max-height: 50vh;
-    background-color: rgba(0, 0, 0, 0.7);
-    border: 1px solid #00ffff;
-    box-shadow: 0 0 15px #00ffff;
-    font-family: 'Share Tech Mono', monospace;
-    color: #00ff00;
-    padding: 10px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    opacity: 0;
-    pointer-events: none;
-    z-index: 100;
-}
-#terminal-output { flex-grow: 1; overflow-y: auto; white-space: pre-wrap; margin-bottom: 5px; scrollbar-width: thin; scrollbar-color: #00ffff transparent; }
-#terminal-output::-webkit-scrollbar { width: 8px; }
-#terminal-output::-webkit-scrollbar-thumb { background-color: #00ffff; border-radius: 4px; }
-#terminal-output::-webkit-scrollbar-track { background-color: transparent; }
-#terminal-input-line { display: flex; align-items: center; }
-#terminal-prompt { color: #00ffff; margin-right: 5px; }
-#terminal-input { flex-grow: 1; background-color: transparent; border: none; outline: none; color: #00ff00; caret-color: #00ff00; font-family: 'Share Tech Mono', monospace; font-size: inherit; padding: 0; }
-/* Audio Controls Styling (No change from previous) */
-#audio-controls {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 101;
-    opacity: 0;
-    transition: opacity 0.5s ease-in-out;
-}
-#audio-toggle-btn { background-color: rgba(0, 0, 0, 0.7); border: 1px solid #00ffff; color: #00ff00; padding: 10px 15px; font-family: 'Share Tech Mono', monospace; font-size: 14px; cursor: pointer; border-radius: 5px; box-shadow: 0 0 10px #00ffff; transition: all 0.2s ease-in-out; }
-#audio-toggle-btn:hover { background-color: rgba(0, 0, 0, 0.9); box-shadow: 0 0 20px #00ffff; color: #00ffff; }
+        /* Terminal Styling (No change from previous) */
+        #terminal-container {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 500px;
+            max-width: 90vw;
+            height: 300px;
+            max-height: 50vh;
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px solid #00ffff;
+            box-shadow: 0 0 15px #00ffff;
+            font-family: 'Share Tech Mono', monospace;
+            color: #00ff00;
+            padding: 10px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+        #terminal-output { flex-grow: 1; overflow-y: auto; white-space: pre-wrap; margin-bottom: 5px; scrollbar-width: thin; scrollbar-color: #00ffff transparent; }
+        #terminal-output::-webkit-scrollbar { width: 8px; }
+        #terminal-output::-webkit-scrollbar-thumb { background-color: #00ffff; border-radius: 4px; }
+        #terminal-output::-webkit-scrollbar-track { background-color: transparent; }
+        #terminal-input-line { display: flex; align-items: center; }
+        #terminal-prompt { color: #00ffff; margin-right: 5px; }
+        #terminal-input { flex-grow: 1; background-color: transparent; border: none; outline: none; color: #00ff00; caret-color: #00ff00; font-family: 'Share Tech Mono', monospace; font-size: inherit; padding: 0; }
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
-/* Digital Clock Styling (No change from previous) */
-#digital-clock {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 2em;
-    color: #00ffff;
-    text-shadow: 0 0 10px #00ffff;
-    background-color: rgba(0, 0, 0, 0.5);
-    padding: 10px 15px;
-    border-radius: 5px;
-    border: 1px solid #00ffff;
-    box-shadow: 0 0 15px #00ffff;
-    opacity: 0;
-    transition: opacity 0.5s ease-in-out;
-    z-index: 101;
-    filter: brightness(1);
-}
-.glitch-active { animation: glitch-anim 0.8s infinite alternate; }
-@keyframes glitch-anim {
-    0% { transform: translate(0); filter: brightness(1); }
-    20% { transform: translate(-2px, 2px); filter: brightness(1.2); }
-    40% { transform: translate(-1px, -1px); filter: brightness(0.8); }
-    60% { transform: translate(2px, 1px); filter: brightness(1.1); }
-    80% { transform: translate(1px, -2px); filter: brightness(0.9); }
-    100% { transform: translate(0); filter: brightness(1); }
-}
+        /* Audio Controls Styling (No change from previous) */
+        #audio-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 101;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        #audio-toggle-btn { background-color: rgba(0, 0, 0, 0.7); border: 1px solid #00ffff; color: #00ff00; padding: 10px 15px; font-family: 'Share Tech Mono', monospace; font-size: 14px; cursor: pointer; border-radius: 5px; box-shadow: 0 0 10px #00ffff; transition: all 0.2s ease-in-out; }
+        #audio-toggle-btn:hover { background-color: rgba(0, 0, 0, 0.9); box-shadow: 0 0 20px #00ffff; color: #00ffff; }
+
+        /* Digital Clock Styling (No change from previous) */
+        #digital-clock {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 2em;
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: 1px solid #00ffff;
+            box-shadow: 0 0 15px #00ffff;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            z-index: 101;
+            filter: brightness(1);
+        }
+        .glitch-active { animation: glitch-anim 0.8s infinite alternate; }
+        @keyframes glitch-anim {
+            0% { transform: translate(0); filter: brightness(1); }
+            20% { transform: translate(-2px, 2px); filter: brightness(1.2); }
+            40% { transform: translate(-1px, -1px); filter: brightness(0.8); }
+            60% { transform: translate(2px, 1px); filter: brightness(1.1); }
+            80% { transform: translate(1px, -2px); filter: brightness(0.9); }
+            100% { transform: translate(0); filter: brightness(1); }
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 </head>
